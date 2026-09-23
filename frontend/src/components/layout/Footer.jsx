@@ -48,7 +48,7 @@ export const Footer = () => {
         <div className="pt-8 border-t border-paper-sand dark:border-paper-sandDark flex flex-col sm:flex-row items-center justify-between text-xs text-ink-muted dark:text-ink-darkMuted gap-4">
           <p>© {new Date().getFullYear()} Borrow Before Buy (BBB). College-only peer sharing.</p>
           <p className="font-medium text-ink dark:text-ink-dark flex items-center gap-1">
-            A mini-project by <span className="font-bold text-terracotta">Deepu Rao</span>, B.Tech CSE (AIML), Lloyd Institute of Engineering & Technology.
+            Built for campus communities. 100% free peer sharing.
           </p>
         </div>
       </div>

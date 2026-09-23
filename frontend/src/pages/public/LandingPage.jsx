@@ -60,20 +60,20 @@ export const LandingPage = () => {
       <section className="py-16 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="paper-card p-8 relative border-terracotta/30 bg-terracotta/5 dark:bg-terracotta/10">
           <div className="pin-dot" />
-          <span className="handwritten-note block text-lg mb-2">A quick note from the builder</span>
+          <span className="handwritten-note block text-lg mb-2">Our Campus Mission</span>
           <h3 className="text-xl font-bold font-serif text-ink dark:text-ink-dark mb-3">
-            Why I built Borrow Before Buy
+            Why Borrow Before Buy?
           </h3>
           <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-darkMuted leading-relaxed mb-4">
-            "In our first year, my batchmates and I bought Rs 1,500 drafters and Rs 1,200 scientific calculators that we used for exactly two lab exams. Everyone was either wasting money or spamming 500-person WhatsApp groups where items vanished with no accountability.
+            In college, students buy costly drafters, lab equipment, and scientific calculators used for just a few lab exams. Everyone is either wasting money or asking in chaotic chat groups where items vanish with zero accountability.
           </p>
           <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-darkMuted leading-relaxed mb-4">
-            I built Borrow Before Buy so our campus has a clean, safe, and transparent way to share what we already own. No payments, no hassle — just students helping students with verified college emails and QR handovers."
+            Borrow Before Buy gives our campus a clean, safe, and transparent way to share what we already own. No payments, no hassle — just students helping students with verified college emails and QR handovers.
           </p>
           <div className="pt-3 border-t border-paper-sand dark:border-paper-sandDark flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-ink dark:text-ink-dark">Deepu Rao</p>
-              <p className="text-[11px] text-terracotta font-semibold">B.Tech CSE (AIML), Lloyd Institute of Engineering & Technology</p>
+              <p className="text-xs font-bold text-ink dark:text-ink-dark">Student Community Initiative</p>
+              <p className="text-[11px] text-terracotta font-semibold">Campus Peer Sharing Network</p>
             </div>
             <Link to="/register">
               <Button variant="primary" size="sm">Join Campus Board</Button>
