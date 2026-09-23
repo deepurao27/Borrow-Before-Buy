@@ -3,7 +3,7 @@ services:
     name: bbb-backend
     env: node
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma migrate deploy
+    buildCommand: npm install && npm run build && npx prisma db push --skip-generate
     startCommand: npm start
     envVars:
       - key: NODE_ENV
