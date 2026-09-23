@@ -29,7 +29,7 @@ Borrow Before Buy is a trusted, campus-only peer-to-peer sharing web application
 Deploy the entire stack for free in under 5 minutes:
 - **Frontend**: Hosted on [Vercel](https://vercel.com)
 - **Backend**: Hosted on [Render](https://render.com)
-- **Database**: Serverless PostgreSQL on [Neon.tech](https://neon.tech)
+- **Database**: Managed PostgreSQL on [Supabase](https://supabase.com)
 
 👉 Follow the complete step-by-step instructions in [**DEPLOYMENT.md**](./DEPLOYMENT.md).
 
