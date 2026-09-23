@@ -1,0 +1,591 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [btree_gist]
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+  MODERATOR
+}
+
+enum EmailTokenType {
+  VERIFICATION
+  PASSWORD_RESET
+  LOGIN_OTP
+}
+
+enum ItemCondition {
+  LIKE_NEW
+  GOOD
+  FAIR
+}
+
+enum ItemStatus {
+  ACTIVE
+  DISABLED
+  FROZEN
+}
+
+enum NeedStatus {
+  OPEN
+  FULFILLED
+  CLOSED
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum TransactionStatus {
+  ACCEPTED
+  SECURITY_ACKNOWLEDGED
+  HANDOVER_PENDING
+  BORROWED
+  OVERDUE
+  RETURN_PENDING
+  RETURNED
+  COMPLETED
+  DISPUTED
+  RESOLVED
+  CANCELLED
+}
+
+enum SecurityStatus {
+  PENDING
+  ACKNOWLEDGED
+  DISPUTED
+  CLOSED
+}
+
+enum ConditionStage {
+  BEFORE
+  AFTER
+}
+
+enum DisputeType {
+  DAMAGE
+  NON_RETURN
+  FALSE_CLAIM
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum RatingType {
+  BORROWER_TO_LENDER
+  LENDER_TO_BORROWER
+}
+
+enum RoleContext {
+  BORROWER
+  LENDER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id             String        @id @default(uuid())
+  name           String
+  collegeEmail   String        @unique @map("college_email")
+  passwordHash   String        @map("password_hash")
+  department     String
+  year           Int
+  verifiedAt     DateTime?     @map("verified_at")
+  accountStatus  AccountStatus @default(ACTIVE) @map("account_status")
+  role           UserRole      @default(STUDENT)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  refreshTokens      RefreshToken[]
+  emailTokens        EmailToken[]
+  items              Item[]
+  needs              Need[]
+  borrowRequests     BorrowRequest[]
+  lendingTransactions Transaction[]       @relation("LenderTransactions")
+  borrowingTransactions Transaction[]     @relation("BorrowerTransactions")
+  transactionEvents  TransactionEvent[]
+  conditionRecords   ConditionRecord[]   @relation("ConditionCreator")
+  conditionAcks      ConditionRecord[]   @relation("ConditionAcknowledger")
+  handoverRecords    HandoverRecord[]
+  messages           Message[]
+  openedDisputes     Dispute[]           @relation("DisputeOpener")
+  resolvedDisputes   Dispute[]           @relation("DisputeResolver")
+  ratingsGiven       Rating[]            @relation("RatingReviewer")
+  ratingsReceived    Rating[]            @relation("RatingReviewee")
+  trustEvents        TrustEvent[]
+  rewardLedger       RewardTransaction[]
+  notifications      Notification[]
+  reportsFiled       Report[]            @relation("ReportReporter")
+  blocksInitiated    UserBlock[]         @relation("Blocker")
+  blocksReceived     UserBlock[]         @relation("Blocked")
+  auditLogs          AuditLog[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  tokenHash  String   @unique @map("token_hash")
+  familyId   String   @map("family_id")
+  isRevoked  Boolean  @default(false) @map("is_revoked")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model EmailToken {
+  id         String         @id @default(uuid())
+  userId     String         @map("user_id")
+  tokenHash  String         @unique @map("token_hash")
+  type       EmailTokenType
+  expiresAt  DateTime       @map("expires_at")
+  usedAt     DateTime?      @map("used_at")
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("email_tokens")
+}
+
+model Category {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  slug             String   @unique
+  icon             String
+  typicalPriceInr  Int      @default(500) @map("typical_price_inr")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  items            Item[]
+  needs            Need[]
+
+  @@map("categories")
+}
+
+model CampusPoint {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  zone      String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  items     Item[]
+
+  @@map("campus_points")
+}
+
+model Item {
+  id               String        @id @default(uuid())
+  ownerId          String        @map("owner_id")
+  categoryId       String        @map("category_id")
+  title            String
+  description      String
+  condition        ItemCondition
+  securityAmount   Int           @map("security_amount")
+  handoverPointId  String        @map("handover_point_id")
+  status           ItemStatus    @default(ACTIVE)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  owner            User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  category         Category      @relation(fields: [categoryId], references: [id])
+  handoverPoint    CampusPoint   @relation(fields: [handoverPointId], references: [id])
+  photos           ItemPhoto[]
+  availability     ItemAvailability[]
+  borrowRequests   BorrowRequest[]
+  transactions     Transaction[]
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([handoverPointId])
+  @@index([status])
+  @@map("items")
+}
+
+model ItemPhoto {
+  id        String   @id @default(uuid())
+  itemId    String   @map("item_id")
+  url       String
+  key       String
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@map("item_photos")
+}
+
+model ItemAvailability {
+  id        String   @id @default(uuid())
+  itemId    String   @map("item_id")
+  startAt   DateTime @map("start_at")
+  endAt     DateTime @map("end_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId, startAt, endAt])
+  @@map("item_availability")
+}
+
+model Need {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  categoryId  String     @map("category_id")
+  title       String
+  description String
+  neededFrom  DateTime   @map("needed_from")
+  neededTo    DateTime   @map("needed_to")
+  status      NeedStatus @default(OPEN)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category   @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([status])
+  @@map("needs")
+}
+
+model BorrowRequest {
+  id             String        @id @default(uuid())
+  itemId         String        @map("item_id")
+  borrowerId     String        @map("borrower_id")
+  requestedStart DateTime      @map("requested_start")
+  requestedEnd   DateTime      @map("requested_end")
+  message        String?
+  status         RequestStatus @default(PENDING)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  item           Item          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  borrower       User          @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
+  transaction    Transaction?
+
+  @@index([itemId, borrowerId])
+  @@index([status])
+  @@map("borrow_requests")
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  requestId       String?           @unique @map("request_id")
+  itemId          String            @map("item_id")
+  lenderId        String            @map("lender_id")
+  borrowerId      String            @map("borrower_id")
+  status          TransactionStatus @default(ACCEPTED)
+  startAt         DateTime          @map("start_at")
+  dueAt           DateTime          @map("due_at")
+  returnedAt      DateTime?         @map("returned_at")
+  completedAt     DateTime?         @map("completed_at")
+  version         Int               @default(1)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  item            Item              @relation(fields: [itemId], references: [id])
+  lender          User              @relation("LenderTransactions", fields: [lenderId], references: [id])
+  borrower        User              @relation("BorrowerTransactions", fields: [borrowerId], references: [id])
+  borrowRequest   BorrowRequest?    @relation(fields: [requestId], references: [id])
+
+  securityAgreement SecurityAgreement?
+  events          TransactionEvent[]
+  conditionRecords ConditionRecord[]
+  handoverTokens  HandoverToken[]
+  handoverRecords HandoverRecord[]
+  messages        Message[]
+  disputes        Dispute[]
+  ratings         Rating[]
+  trustEvents     TrustEvent[]
+
+  @@index([lenderId])
+  @@index([borrowerId])
+  @@index([itemId])
+  @@index([status])
+  @@map("transactions")
+}
+
+model TransactionEvent {
+  id            String            @id @default(uuid())
+  transactionId String            @map("transaction_id")
+  fromState     TransactionStatus @map("from_state")
+  toState       TransactionStatus @map("to_state")
+  actorId       String            @map("actor_id")
+  note          String?
+  at            DateTime          @default(now())
+
+  transaction   Transaction       @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  actor         User              @relation(fields: [actorId], references: [id])
+
+  @@index([transactionId])
+  @@map("transaction_events")
+}
+
+model SecurityAgreement {
+  id                     String         @id @default(uuid())
+  transactionId          String         @unique @map("transaction_id")
+  securityAmount         Int            @map("security_amount")
+  borrowerAcknowledged   Boolean        @default(false) @map("borrower_acknowledged")
+  borrowerAcknowledgedAt DateTime?      @map("borrower_acknowledged_at")
+  lenderAcknowledged     Boolean        @default(false) @map("lender_acknowledged")
+  lenderAcknowledgedAt   DateTime?      @map("lender_acknowledged_at")
+  offlineTipNote         String?        @map("offline_tip_note")
+  status                 SecurityStatus @default(PENDING)
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+
+  transaction            Transaction    @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@map("security_agreements")
+}
+
+model HandoverToken {
+  id            String      @id @default(uuid())
+  transactionId String      @map("transaction_id")
+  jtiHash       String      @unique @map("jti_hash")
+  manualCode    String      @map("manual_code")
+  expiresAt     DateTime    @map("expires_at")
+  usedAt        DateTime?   @map("used_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([transactionId])
+  @@map("handover_tokens")
+}
+
+model HandoverRecord {
+  id            String      @id @default(uuid())
+  transactionId String      @map("transaction_id")
+  actorId       String      @map("actor_id")
+  method        String      @default("QR_SCAN")
+  timestamp     DateTime    @default(now())
+
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  actor         User        @relation(fields: [actorId], references: [id])
+
+  @@index([transactionId])
+  @@map("handover_records")
+}
+
+model ConditionRecord {
+  id             String         @id @default(uuid())
+  transactionId  String         @map("transaction_id")
+  stage          ConditionStage
+  notes          String?
+  checklist      Json
+  photoKeys      String[]       @map("photo_keys")
+  createdBy      String         @map("created_by")
+  acknowledgedBy String?        @map("acknowledged_by")
+  acknowledgedAt DateTime?      @map("acknowledged_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  transaction    Transaction    @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  creator        User           @relation("ConditionCreator", fields: [createdBy], references: [id])
+  acknowledger   User?          @relation("ConditionAcknowledger", fields: [acknowledgedBy], references: [id])
+
+  @@index([transactionId, stage])
+  @@map("condition_records")
+}
+
+model Message {
+  id            String      @id @default(uuid())
+  transactionId String      @map("transaction_id")
+  senderId      String      @map("sender_id")
+  content       String
+  isRead        Boolean     @default(false) @map("is_read")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  sender        User        @relation(fields: [senderId], references: [id])
+
+  @@index([transactionId, createdAt])
+  @@map("messages")
+}
+
+model Dispute {
+  id            String        @id @default(uuid())
+  transactionId String        @map("transaction_id")
+  openedBy      String        @map("opened_by")
+  type          DisputeType
+  description   String
+  status        DisputeStatus @default(OPEN)
+  resolvedBy    String?       @map("resolved_by")
+  resolution    String?
+  resolvedAt    DateTime?     @map("resolved_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  transaction   Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  opener        User          @relation("DisputeOpener", fields: [openedBy], references: [id])
+  resolver      User?         @relation("DisputeResolver", fields: [resolvedBy], references: [id])
+  evidence      Evidence[]
+
+  @@index([transactionId])
+  @@index([status])
+  @@map("disputes")
+}
+
+model Evidence {
+  id          String   @id @default(uuid())
+  disputeId   String   @map("dispute_id")
+  uploaderId  String   @map("uploader_id")
+  storageKey  String   @map("storage_key")
+  filename    String
+  mimeType    String   @map("mime_type")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  dispute     Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  @@index([disputeId])
+  @@map("evidence")
+}
+
+model Rating {
+  id            String      @id @default(uuid())
+  transactionId String      @map("transaction_id")
+  reviewerId    String      @map("reviewer_id")
+  revieweeId    String      @map("reviewee_id")
+  ratingType    RatingType  @map("rating_type")
+  rating        Int
+  comment       String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  reviewer      User        @relation("RatingReviewer", fields: [reviewerId], references: [id])
+  reviewee      User        @relation("RatingReviewee", fields: [revieweeId], references: [id])
+
+  @@unique([transactionId, reviewerId])
+  @@index([revieweeId])
+  @@map("ratings")
+}
+
+model TrustEvent {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  roleContext   RoleContext @map("role_context")
+  eventType     String      @map("event_type")
+  delta         Int
+  transactionId String?     @map("transaction_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, roleContext])
+  @@map("trust_events")
+}
+
+model RewardTransaction {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  points    Int
+  reason    String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("reward_transactions")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model Report {
+  id          String       @id @default(uuid())
+  reporterId  String       @map("reporter_id")
+  targetType  String       @map("target_type")
+  targetId    String       @map("target_id")
+  reason      String
+  status      ReportStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  reporter    User         @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@index([status])
+  @@map("reports")
+}
+
+model UserBlock {
+  id        String   @id @default(uuid())
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@map("user_blocks")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?  @map("actor_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@map("audit_logs")
+}

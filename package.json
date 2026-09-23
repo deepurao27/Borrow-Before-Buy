@@ -1,0 +1,21 @@
+{
+  "name": "borrow-before-buy",
+  "version": "1.0.0",
+  "description": "Campus Peer-to-Peer Borrowing Platform",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "test:backend": "npm --prefix backend test",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint"
+  },
+  "keywords": [
+    "campus",
+    "borrowing",
+    "peer-to-peer",
+    "college"
+  ],
+  "author": "Deepu Rao",
+  "license": "ISC"
+}
