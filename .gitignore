@@ -19,6 +19,7 @@ pnpm-debug.log*
 
 # Database & Uploads
 backend/uploads/
+backend/.pgdata/
 backend/prisma/*.db
 backend/prisma/*.db-journal
 postgres_data/
