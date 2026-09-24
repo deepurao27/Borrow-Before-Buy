@@ -12,29 +12,29 @@ import { UploadCloud, X, PlusCircle, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const FALLBACK_CATEGORIES = [
-  { id: 'c0000000-0000-4000-8000-000000000001', name: 'Calculators', slug: 'calculators' },
-  { id: 'c0000000-0000-4000-8000-000000000002', name: 'Cables & Adapters', slug: 'cables-adapters' },
-  { id: 'c0000000-0000-4000-8000-000000000003', name: 'Lab Gear', slug: 'lab-gear' },
-  { id: 'c0000000-0000-4000-8000-000000000004', name: 'Stationery & Drawing', slug: 'stationery' },
-  { id: 'c0000000-0000-4000-8000-000000000005', name: 'Electronics & Dev Boards', slug: 'electronics' },
-  { id: 'c0000000-0000-4000-8000-000000000006', name: 'Tripods & Cameras', slug: 'photography' },
-  { id: 'c0000000-0000-4000-8000-000000000007', name: 'Sports Equipment', slug: 'sports' },
-  { id: 'c0000000-0000-4000-8000-000000000008', name: 'Textbooks & Notes', slug: 'books' },
-  { id: 'c0000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others' }
+  { id: '00000000-0000-4000-8000-000000000001', name: 'Calculators', slug: 'calculators' },
+  { id: '00000000-0000-4000-8000-000000000002', name: 'Cables & Adapters', slug: 'cables-adapters' },
+  { id: '00000000-0000-4000-8000-000000000003', name: 'Lab Gear', slug: 'lab-gear' },
+  { id: '00000000-0000-4000-8000-000000000004', name: 'Stationery & Drawing', slug: 'stationery' },
+  { id: '00000000-0000-4000-8000-000000000005', name: 'Electronics & Dev Boards', slug: 'electronics' },
+  { id: '00000000-0000-4000-8000-000000000006', name: 'Tripods & Cameras', slug: 'photography' },
+  { id: '00000000-0000-4000-8000-000000000007', name: 'Sports Equipment', slug: 'sports' },
+  { id: '00000000-0000-4000-8000-000000000008', name: 'Textbooks & Notes', slug: 'books' },
+  { id: '00000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others' }
 ];
 
 const FALLBACK_CAMPUS_POINTS = [
-  { id: 'p0000000-0000-4000-8000-000000000001', name: 'Library Steps', zone: 'Central Campus' },
-  { id: 'p0000000-0000-4000-8000-000000000002', name: 'Main Gate', zone: 'North Entrance' },
-  { id: 'p0000000-0000-4000-8000-000000000003', name: 'Canteen', zone: 'Student Activity Center' },
-  { id: 'p0000000-0000-4000-8000-000000000004', name: 'Block A Lobby', zone: 'Academic Block A' },
-  { id: 'p0000000-0000-4000-8000-000000000005', name: 'Sports Pavilion', zone: 'Athletic Grounds' },
-  { id: 'p0000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location' }
+  { id: '10000000-0000-4000-8000-000000000001', name: 'Library Steps', zone: 'Central Campus' },
+  { id: '10000000-0000-4000-8000-000000000002', name: 'Main Gate', zone: 'North Entrance' },
+  { id: '10000000-0000-4000-8000-000000000003', name: 'Canteen', zone: 'Student Activity Center' },
+  { id: '10000000-0000-4000-8000-000000000004', name: 'Block A Lobby', zone: 'Academic Block A' },
+  { id: '10000000-0000-4000-8000-000000000005', name: 'Sports Pavilion', zone: 'Athletic Grounds' },
+  { id: '10000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location' }
 ];
 
 const schema = z.object({
-  title: z.string().trim().min(3, 'Title must be at least 3 characters').max(80),
-  description: z.string().trim().min(10, 'Description must be at least 10 characters'),
+  title: z.string().trim().min(2, 'Title must be at least 2 characters').max(100),
+  description: z.string().trim().min(5, 'Description must be at least 5 characters'),
   categoryId: z.string().min(1, 'Please select a category'),
   customCategory: z.string().trim().max(80).optional(),
   condition: z.enum(['LIKE_NEW', 'GOOD', 'FAIR']),
@@ -182,7 +182,8 @@ export const PostItemPage = () => {
       toast.success('Your item is pinned to the campus noticeboard!');
       navigate(`/items/${createdItem.id}`);
     } catch (err) {
-      toast.error(err.message || 'Failed to list item.');
+      const fieldErrorMsg = err.fields ? Object.values(err.fields).filter(Boolean).join('. ') : null;
+      toast.error(fieldErrorMsg || err.message || 'Failed to list item.');
     } finally {
       setSubmitting(false);
     }

@@ -3,16 +3,79 @@ import { storage } from '../storage/index.js';
 import { CONSTANTS } from '../config/constants.js';
 
 export const createItem = async (ownerId, data) => {
+  // 1. Resolve category: ensure categoryId exists in database
+  let categoryId = data.categoryId;
+  const existingCat = await prisma.category.findUnique({
+    where: { id: categoryId }
+  }).catch(() => null);
+
+  if (!existingCat) {
+    // Try finding by slug 'others' or name
+    const othersCat = await prisma.category.findFirst({
+      where: {
+        OR: [
+          { slug: 'others' },
+          { name: { equals: 'Others', mode: 'insensitive' } }
+        ]
+      }
+    }).catch(() => null);
+
+    if (othersCat) {
+      categoryId = othersCat.id;
+    } else {
+      const anyCat = await prisma.category.findFirst().catch(() => null);
+      if (anyCat) {
+        categoryId = anyCat.id;
+      } else {
+        const newCat = await prisma.category.create({
+          data: { name: 'Others', slug: 'others', icon: 'MoreHorizontal', typicalPriceInr: 500 }
+        });
+        categoryId = newCat.id;
+      }
+    }
+  }
+
+  // 2. Resolve handover point: ensure handoverPointId exists in database
+  let handoverPointId = data.handoverPointId;
+  const existingPoint = await prisma.campusPoint.findUnique({
+    where: { id: handoverPointId }
+  }).catch(() => null);
+
+  if (!existingPoint) {
+    const othersPt = await prisma.campusPoint.findFirst({
+      where: {
+        OR: [
+          { name: { equals: 'Others', mode: 'insensitive' } },
+          { name: { equals: 'Other Location', mode: 'insensitive' } }
+        ]
+      }
+    }).catch(() => null);
+
+    if (othersPt) {
+      handoverPointId = othersPt.id;
+    } else {
+      const anyPt = await prisma.campusPoint.findFirst().catch(() => null);
+      if (anyPt) {
+        handoverPointId = anyPt.id;
+      } else {
+        const newPt = await prisma.campusPoint.create({
+          data: { name: 'Others', zone: 'Custom Spot / Designated Location', isActive: true }
+        });
+        handoverPointId = newPt.id;
+      }
+    }
+  }
+
   const item = await prisma.item.create({
     data: {
       ownerId,
       title: data.title,
       description: data.description,
-      categoryId: data.categoryId,
+      categoryId,
       customCategory: data.customCategory || null,
       condition: data.condition,
-      securityAmount: data.securityAmount,
-      handoverPointId: data.handoverPointId,
+      securityAmount: Number(data.securityAmount) || 0,
+      handoverPointId,
       customHandoverPoint: data.customHandoverPoint || null,
       status: 'ACTIVE'
     },

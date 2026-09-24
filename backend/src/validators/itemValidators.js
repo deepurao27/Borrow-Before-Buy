@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
 export const createItemSchema = z.object({
-  title: z.string().trim().min(3, 'Title must be at least 3 characters').max(80, 'Title cannot exceed 80 characters'),
-  description: z.string().trim().min(10, 'Description must be at least 10 characters').max(2000),
-  categoryId: z.string().uuid('Please select a valid category'),
-  customCategory: z.string().trim().max(80, 'Custom category cannot exceed 80 characters').optional().nullable(),
+  title: z.string().trim().min(2, 'Title must be at least 2 characters').max(100, 'Title cannot exceed 100 characters'),
+  description: z.string().trim().min(5, 'Description must be at least 5 characters').max(2000),
+  categoryId: z.string().min(1, 'Please select a valid category'),
+  customCategory: z.preprocess((val) => (val === '' ? null : val), z.string().trim().max(80, 'Custom category cannot exceed 80 characters').nullable().optional()),
   condition: z.enum(['LIKE_NEW', 'GOOD', 'FAIR'], {
     errorMap: () => ({ message: 'Condition must be LIKE_NEW, GOOD, or FAIR' })
   }),
   securityAmount: z.coerce.number().int().min(0, 'Security amount cannot be negative').max(50000, 'Security amount exceeds max limit'),
-  handoverPointId: z.string().uuid('Please select a valid campus handover point'),
-  customHandoverPoint: z.string().trim().max(120, 'Custom handover location cannot exceed 120 characters').optional().nullable()
+  handoverPointId: z.string().min(1, 'Please select a valid campus handover point'),
+  customHandoverPoint: z.preprocess((val) => (val === '' ? null : val), z.string().trim().max(120, 'Custom handover location cannot exceed 120 characters').nullable().optional())
 });
 
 export const updateItemSchema = createItemSchema.partial().extend({

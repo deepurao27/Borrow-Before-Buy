@@ -42,24 +42,24 @@ router.get('/public/stats', async (req, res, next) => {
 });
 
 export const DEFAULT_CATEGORIES = [
-  { id: 'c0000000-0000-4000-8000-000000000001', name: 'Calculators', slug: 'calculators', icon: 'Calculator', typicalPriceInr: 1200 },
-  { id: 'c0000000-0000-4000-8000-000000000002', name: 'Cables & Adapters', slug: 'cables-adapters', icon: 'Cable', typicalPriceInr: 450 },
-  { id: 'c0000000-0000-4000-8000-000000000003', name: 'Lab Gear', slug: 'lab-gear', icon: 'FlaskConical', typicalPriceInr: 600 },
-  { id: 'c0000000-0000-4000-8000-000000000004', name: 'Stationery & Drawing', slug: 'stationery', icon: 'PenTool', typicalPriceInr: 350 },
-  { id: 'c0000000-0000-4000-8000-000000000005', name: 'Electronics & Dev Boards', slug: 'electronics', icon: 'Cpu', typicalPriceInr: 1500 },
-  { id: 'c0000000-0000-4000-8000-000000000006', name: 'Tripods & Cameras', slug: 'photography', icon: 'Camera', typicalPriceInr: 2200 },
-  { id: 'c0000000-0000-4000-8000-000000000007', name: 'Sports Equipment', slug: 'sports', icon: 'Trophy', typicalPriceInr: 800 },
-  { id: 'c0000000-0000-4000-8000-000000000008', name: 'Textbooks & Notes', slug: 'books', icon: 'BookOpen', typicalPriceInr: 750 },
-  { id: 'c0000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others', icon: 'MoreHorizontal', typicalPriceInr: 500 }
+  { id: '00000000-0000-4000-8000-000000000001', name: 'Calculators', slug: 'calculators', icon: 'Calculator', typicalPriceInr: 1200 },
+  { id: '00000000-0000-4000-8000-000000000002', name: 'Cables & Adapters', slug: 'cables-adapters', icon: 'Cable', typicalPriceInr: 450 },
+  { id: '00000000-0000-4000-8000-000000000003', name: 'Lab Gear', slug: 'lab-gear', icon: 'FlaskConical', typicalPriceInr: 600 },
+  { id: '00000000-0000-4000-8000-000000000004', name: 'Stationery & Drawing', slug: 'stationery', icon: 'PenTool', typicalPriceInr: 350 },
+  { id: '00000000-0000-4000-8000-000000000005', name: 'Electronics & Dev Boards', slug: 'electronics', icon: 'Cpu', typicalPriceInr: 1500 },
+  { id: '00000000-0000-4000-8000-000000000006', name: 'Tripods & Cameras', slug: 'photography', icon: 'Camera', typicalPriceInr: 2200 },
+  { id: '00000000-0000-4000-8000-000000000007', name: 'Sports Equipment', slug: 'sports', icon: 'Trophy', typicalPriceInr: 800 },
+  { id: '00000000-0000-4000-8000-000000000008', name: 'Textbooks & Notes', slug: 'books', icon: 'BookOpen', typicalPriceInr: 750 },
+  { id: '00000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others', icon: 'MoreHorizontal', typicalPriceInr: 500 }
 ];
 
 export const DEFAULT_CAMPUS_POINTS = [
-  { id: 'p0000000-0000-4000-8000-000000000001', name: 'Library Steps', zone: 'Central Campus', isActive: true },
-  { id: 'p0000000-0000-4000-8000-000000000002', name: 'Main Gate', zone: 'North Entrance', isActive: true },
-  { id: 'p0000000-0000-4000-8000-000000000003', name: 'Canteen', zone: 'Student Activity Center', isActive: true },
-  { id: 'p0000000-0000-4000-8000-000000000004', name: 'Block A Lobby', zone: 'Academic Block A', isActive: true },
-  { id: 'p0000000-0000-4000-8000-000000000005', name: 'Sports Pavilion', zone: 'Athletic Grounds', isActive: true },
-  { id: 'p0000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location', isActive: true }
+  { id: '10000000-0000-4000-8000-000000000001', name: 'Library Steps', zone: 'Central Campus', isActive: true },
+  { id: '10000000-0000-4000-8000-000000000002', name: 'Main Gate', zone: 'North Entrance', isActive: true },
+  { id: '10000000-0000-4000-8000-000000000003', name: 'Canteen', zone: 'Student Activity Center', isActive: true },
+  { id: '10000000-0000-4000-8000-000000000004', name: 'Block A Lobby', zone: 'Academic Block A', isActive: true },
+  { id: '10000000-0000-4000-8000-000000000005', name: 'Sports Pavilion', zone: 'Athletic Grounds', isActive: true },
+  { id: '10000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location', isActive: true }
 ];
 
 /**
