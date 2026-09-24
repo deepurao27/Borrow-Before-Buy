@@ -34,7 +34,7 @@ export const RequestsPage = () => {
     mutationFn: (requestId) => apiClient(`/requests/${requestId}/accept`, { method: 'PATCH' }),
     onSuccess: (data) => {
       toast.success('Borrow request accepted! Transaction created.');
-      queryClient.invalidateQueries(['requests']);
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to accept request.');
@@ -45,7 +45,7 @@ export const RequestsPage = () => {
     mutationFn: (requestId) => apiClient(`/requests/${requestId}/reject`, { method: 'PATCH' }),
     onSuccess: () => {
       toast.success('Borrow request declined.');
-      queryClient.invalidateQueries(['requests']);
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to decline request.');
@@ -56,7 +56,7 @@ export const RequestsPage = () => {
     mutationFn: (requestId) => apiClient(`/requests/${requestId}/cancel`, { method: 'PATCH' }),
     onSuccess: () => {
       toast.success('Request cancelled.');
-      queryClient.invalidateQueries(['requests']);
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to cancel request.');

@@ -35,10 +35,28 @@ export const errorHandler = (err, req, res, next) => {
     return sendError(res, 'INVALID_FILE_UPLOAD', 'Unexpected file upload field or too many files.', 400);
   }
 
+  // Handle Prisma Known Request Errors
+  if (err.name === 'PrismaClientKnownRequestError' || (err.code && err.code.startsWith('P'))) {
+    if (err.code === 'P2025') {
+      return sendError(res, 'NOT_FOUND', 'The requested record or resource was not found.', 404);
+    }
+    if (err.code === 'P2002') {
+      return sendError(res, 'CONFLICT', 'A record with this information already exists.', 409);
+    }
+    if (err.code === 'P2003') {
+      return sendError(res, 'BAD_REQUEST', 'Referenced resource or relation could not be found.', 400);
+    }
+    if (err.code === 'P2014') {
+      return sendError(res, 'BAD_REQUEST', 'Relation constraint violation occurred.', 400);
+    }
+  }
+
   // Handle known HTTP Status errors
   const status = err.statusCode || err.status || 500;
   const code = err.code || (status === 500 ? 'INTERNAL_SERVER_ERROR' : 'REQUEST_FAILED');
-  const message = status === 500 ? 'An unexpected server error occurred. Please try again.' : err.message;
+  const message = status === 500
+    ? (process.env.NODE_ENV === 'development' ? err.message : 'An unexpected server error occurred. Please try again.')
+    : err.message;
 
   return sendError(res, code, message, status);
 };

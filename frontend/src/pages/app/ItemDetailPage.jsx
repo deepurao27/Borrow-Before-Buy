@@ -85,7 +85,7 @@ export const ItemDetailPage = () => {
     try {
       await apiClient(`/items/${id}`, { method: 'DELETE' });
       toast.success('Item listing deactivated.');
-      queryClient.invalidateQueries(['items']);
+      queryClient.invalidateQueries({ queryKey: ['items'] });
       navigate('/search');
     } catch (err) {
       toast.error(err.message || 'Failed to delete item.');

@@ -129,10 +129,22 @@ export const updateSecurityAgreement = async (req, res, next) => {
       return sendError(res, 'INVALID_STATE', 'Cannot adjust deposit amount after agreements have started.', 400);
     }
 
-    const updated = await prisma.securityAgreement.update({
+    let safeAmount = undefined;
+    if (securityAmount !== undefined) {
+      const parsed = parseInt(securityAmount, 10);
+      safeAmount = isNaN(parsed) ? 0 : Math.max(0, parsed);
+    }
+
+    const updated = await prisma.securityAgreement.upsert({
       where: { transactionId: id },
-      data: {
-        securityAmount: securityAmount !== undefined ? Math.max(0, parseInt(securityAmount, 10)) : undefined,
+      create: {
+        transactionId: id,
+        securityAmount: safeAmount ?? 0,
+        offlineTipNote: offlineTipNote !== undefined ? offlineTipNote : null,
+        status: 'PENDING'
+      },
+      update: {
+        securityAmount: safeAmount,
         offlineTipNote: offlineTipNote !== undefined ? offlineTipNote : undefined,
         borrowerAcknowledged: false, // reset acknowledgements if changed
         lenderAcknowledged: false

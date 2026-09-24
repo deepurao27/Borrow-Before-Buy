@@ -10,7 +10,7 @@ export const TransactionChatBox = ({ transactionId }) => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
-  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   const fetchMessages = async () => {
     try {
@@ -32,8 +32,11 @@ export const TransactionChatBox = ({ transactionId }) => {
     return () => clearInterval(interval);
   }, [transactionId]);
 
+  // Scroll ONLY the internal chat container down, never the whole window/page
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const handleSendMessage = async (e) => {
@@ -81,7 +84,10 @@ export const TransactionChatBox = ({ transactionId }) => {
       </div>
 
       {/* Message History */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-paper-light/50 dark:bg-paper-dark/50">
+      <div
+        ref={chatContainerRef}
+        className="flex-1 p-4 overflow-y-auto space-y-3 bg-paper-light/50 dark:bg-paper-dark/50"
+      >
         {loading && messages.length === 0 ? (
           <div className="h-full flex items-center justify-center text-xs text-ink-muted dark:text-ink-darkMuted">
             Loading messages...
@@ -125,7 +131,6 @@ export const TransactionChatBox = ({ transactionId }) => {
             );
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Sender Form */}

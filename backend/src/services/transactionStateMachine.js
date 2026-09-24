@@ -28,13 +28,26 @@ const ALLOWED_TRANSITIONS = {
  */
 export const transitionTransaction = async (transactionId, action, actor, payload = {}) => {
   return await prisma.$transaction(async (tx) => {
-    // 1. Lock transaction row using raw SQL SELECT ... FOR UPDATE to prevent race conditions
-    const [lockedRow] = await tx.$queryRaw`
-      SELECT id, status, version, "lender_id" as "lenderId", "borrower_id" as "borrowerId", "item_id" as "itemId"
-      FROM transactions
-      WHERE id = ${transactionId}
-      FOR UPDATE
-    `;
+    // 1. Lock or fetch transaction row
+    let lockedRow;
+    try {
+      const rows = await tx.$queryRaw`
+        SELECT id, status, version, "lender_id" as "lenderId", "borrower_id" as "borrowerId", "item_id" as "itemId"
+        FROM transactions
+        WHERE id = ${transactionId}
+        FOR UPDATE
+      `;
+      lockedRow = rows?.[0];
+    } catch (e) {
+      // Fallback for poolers or dialects that reject raw FOR UPDATE
+    }
+
+    if (!lockedRow) {
+      lockedRow = await tx.transaction.findUnique({
+        where: { id: transactionId },
+        select: { id: true, status: true, version: true, lenderId: true, borrowerId: true, itemId: true }
+      });
+    }
 
     if (!lockedRow) {
       const error = new Error('Transaction not found.');
@@ -71,14 +84,19 @@ export const transitionTransaction = async (transactionId, action, actor, payloa
         }
 
         // Fetch or create SecurityAgreement
-        const secAgreement = await tx.securityAgreement.findUnique({
+        let secAgreement = await tx.securityAgreement.findUnique({
           where: { transactionId }
         });
 
         if (!secAgreement) {
-          const error = new Error('Security agreement record not found.');
-          error.status = 404;
-          throw error;
+          const txItem = await tx.item.findUnique({ where: { id: lockedRow.itemId } });
+          secAgreement = await tx.securityAgreement.create({
+            data: {
+              transactionId,
+              securityAmount: txItem?.securityAmount || 0,
+              status: 'PENDING'
+            }
+          });
         }
 
         const updateData = {};

@@ -94,8 +94,8 @@ export const AdminModerationPage = () => {
     },
     onSuccess: (res, vars) => {
       toast.success(`User account status updated to ${vars.status}.`);
-      queryClient.invalidateQueries(['admin-users']);
-      queryClient.invalidateQueries(['admin-stats']);
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to update user status.');

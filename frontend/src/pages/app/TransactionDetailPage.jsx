@@ -72,7 +72,7 @@ export const TransactionDetailPage = () => {
     },
     onSuccess: () => {
       toast.success('Security agreement updated');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to update deposit');
@@ -87,7 +87,7 @@ export const TransactionDetailPage = () => {
     },
     onSuccess: (res) => {
       toast.success(res.message || 'Security deposit acknowledged!');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to acknowledge');
@@ -103,7 +103,7 @@ export const TransactionDetailPage = () => {
     },
     onSuccess: () => {
       toast.success('Pre-handover condition photos uploaded!');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to submit condition');
@@ -118,7 +118,7 @@ export const TransactionDetailPage = () => {
     },
     onSuccess: () => {
       toast.success('Condition acknowledged! Transaction is now ready for QR Handover.');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to acknowledge condition');
@@ -151,7 +151,7 @@ export const TransactionDetailPage = () => {
     onSuccess: () => {
       setIsQRScannerOpen(false);
       toast.success('Physical handover confirmed! Item status is now BORROWED.');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Verification failed');
@@ -168,7 +168,7 @@ export const TransactionDetailPage = () => {
     },
     onSuccess: () => {
       toast.success('Return meeting requested!');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to initiate return');
@@ -183,7 +183,7 @@ export const TransactionDetailPage = () => {
     },
     onSuccess: () => {
       toast.success('Item return confirmed and exchange completed!');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to confirm return');
@@ -199,7 +199,7 @@ export const TransactionDetailPage = () => {
     },
     onSuccess: () => {
       toast.success('Rating submitted! Trust bonus applied.');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to submit rating');
@@ -218,7 +218,7 @@ export const TransactionDetailPage = () => {
     onSuccess: () => {
       setIsCancelModalOpen(false);
       toast.info('Transaction has been cancelled.');
-      queryClient.invalidateQueries(['transaction', id]);
+      queryClient.invalidateQueries({ queryKey: ['transaction', id] });
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to cancel exchange');
@@ -571,7 +571,7 @@ export const TransactionDetailPage = () => {
         isOpen={isDisputeModalOpen}
         onClose={() => setIsDisputeModalOpen(false)}
         transactionId={transaction.id}
-        onDisputeCreated={() => queryClient.invalidateQueries(['transaction', id])}
+        onDisputeCreated={() => queryClient.invalidateQueries({ queryKey: ['transaction', id] })}
       />
 
       {/* QR Code Display Modal (Lender) */}
