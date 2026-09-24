@@ -11,13 +11,36 @@ import { NoticeDisclaimer } from '../../components/ui/NoticeDisclaimer';
 import { UploadCloud, X, PlusCircle, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
+const FALLBACK_CATEGORIES = [
+  { id: 'c0000000-0000-4000-8000-000000000001', name: 'Calculators', slug: 'calculators' },
+  { id: 'c0000000-0000-4000-8000-000000000002', name: 'Cables & Adapters', slug: 'cables-adapters' },
+  { id: 'c0000000-0000-4000-8000-000000000003', name: 'Lab Gear', slug: 'lab-gear' },
+  { id: 'c0000000-0000-4000-8000-000000000004', name: 'Stationery & Drawing', slug: 'stationery' },
+  { id: 'c0000000-0000-4000-8000-000000000005', name: 'Electronics & Dev Boards', slug: 'electronics' },
+  { id: 'c0000000-0000-4000-8000-000000000006', name: 'Tripods & Cameras', slug: 'photography' },
+  { id: 'c0000000-0000-4000-8000-000000000007', name: 'Sports Equipment', slug: 'sports' },
+  { id: 'c0000000-0000-4000-8000-000000000008', name: 'Textbooks & Notes', slug: 'books' },
+  { id: 'c0000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others' }
+];
+
+const FALLBACK_CAMPUS_POINTS = [
+  { id: 'p0000000-0000-4000-8000-000000000001', name: 'Library Steps', zone: 'Central Campus' },
+  { id: 'p0000000-0000-4000-8000-000000000002', name: 'Main Gate', zone: 'North Entrance' },
+  { id: 'p0000000-0000-4000-8000-000000000003', name: 'Canteen', zone: 'Student Activity Center' },
+  { id: 'p0000000-0000-4000-8000-000000000004', name: 'Block A Lobby', zone: 'Academic Block A' },
+  { id: 'p0000000-0000-4000-8000-000000000005', name: 'Sports Pavilion', zone: 'Athletic Grounds' },
+  { id: 'p0000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location' }
+];
+
 const schema = z.object({
   title: z.string().trim().min(3, 'Title must be at least 3 characters').max(80),
   description: z.string().trim().min(10, 'Description must be at least 10 characters'),
-  categoryId: z.string().uuid('Please select a category'),
+  categoryId: z.string().min(1, 'Please select a category'),
+  customCategory: z.string().trim().max(80).optional(),
   condition: z.enum(['LIKE_NEW', 'GOOD', 'FAIR']),
   securityAmount: z.coerce.number().min(0, 'Security amount cannot be negative').max(50000),
-  handoverPointId: z.string().uuid('Please select a campus meeting spot')
+  handoverPointId: z.string().min(1, 'Please select a campus meeting spot'),
+  customHandoverPoint: z.string().trim().max(120).optional()
 });
 
 export const PostItemPage = () => {
@@ -30,21 +53,65 @@ export const PostItemPage = () => {
     queryKey: ['categories'],
     queryFn: () => apiClient('/categories')
   });
-  const categories = categoriesRes?.data || [];
 
   const { data: pointsRes } = useQuery({
     queryKey: ['campus-points'],
     queryFn: () => apiClient('/campus-points')
   });
-  const campusPoints = pointsRes?.data || [];
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  // Merge API results with fallbacks and guarantee 'Others' exists at the end
+  const categories = React.useMemo(() => {
+    let list = categoriesRes?.data && categoriesRes.data.length > 0
+      ? [...categoriesRes.data]
+      : [...FALLBACK_CATEGORIES];
+
+    if (!list.some((c) => c.slug === 'others' || c.name.toLowerCase() === 'others')) {
+      list.push({ id: 'c0000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others' });
+    }
+
+    return list.sort((a, b) => {
+      if (a.slug === 'others' || a.name.toLowerCase() === 'others') return 1;
+      if (b.slug === 'others' || b.name.toLowerCase() === 'others') return -1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [categoriesRes]);
+
+  const campusPoints = React.useMemo(() => {
+    let list = pointsRes?.data && pointsRes.data.length > 0
+      ? [...pointsRes.data]
+      : [...FALLBACK_CAMPUS_POINTS];
+
+    if (!list.some((p) => p.name.toLowerCase() === 'others')) {
+      list.push({ id: 'p0000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location' });
+    }
+
+    return list.sort((a, b) => {
+      if (a.name.toLowerCase() === 'others') return 1;
+      if (b.name.toLowerCase() === 'others') return -1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [pointsRes]);
+
+  const { register, handleSubmit, watch, formState: { errors }, setError } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       condition: 'GOOD',
-      securityAmount: 200
+      securityAmount: 200,
+      categoryId: '',
+      handoverPointId: '',
+      customCategory: '',
+      customHandoverPoint: ''
     }
   });
+
+  const selectedCategoryId = watch('categoryId');
+  const selectedHandoverPointId = watch('handoverPointId');
+
+  const selectedCategoryObj = categories.find((c) => c.id === selectedCategoryId);
+  const isOtherCategory = selectedCategoryObj?.slug === 'others' || selectedCategoryObj?.name?.toLowerCase() === 'others';
+
+  const selectedPointObj = campusPoints.find((p) => p.id === selectedHandoverPointId);
+  const isOtherHandover = selectedPointObj?.name?.toLowerCase() === 'others';
 
   const handlePhotoChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -68,12 +135,34 @@ export const PostItemPage = () => {
   };
 
   const onSubmit = async (data) => {
+    // Custom validation for 'Others'
+    if (isOtherCategory && (!data.customCategory || data.customCategory.trim().length < 2)) {
+      setError('customCategory', { message: 'Please specify the category name (at least 2 chars)' });
+      return;
+    }
+
+    if (isOtherHandover && (!data.customHandoverPoint || data.customHandoverPoint.trim().length < 2)) {
+      setError('customHandoverPoint', { message: 'Please specify your designated handover location' });
+      return;
+    }
+
     setSubmitting(true);
     try {
+      const payload = {
+        title: data.title,
+        description: data.description,
+        categoryId: data.categoryId,
+        condition: data.condition,
+        securityAmount: data.securityAmount,
+        handoverPointId: data.handoverPointId,
+        customCategory: isOtherCategory ? data.customCategory.trim() : null,
+        customHandoverPoint: isOtherHandover ? data.customHandoverPoint.trim() : null
+      };
+
       // 1. Create Item
       const itemRes = await apiClient('/items', {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
       const createdItem = itemRes?.data;
 
@@ -132,15 +221,33 @@ export const PostItemPage = () => {
             </label>
             <select
               {...register('categoryId')}
-              className="w-full px-3.5 py-2.5 rounded-lg text-xs bg-white dark:bg-paper-cardDark border border-paper-sand dark:border-paper-sandDark text-ink dark:text-ink-dark focus:border-terracotta focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg text-xs bg-white dark:bg-paper-cardDark border border-paper-sand dark:border-paper-sandDark text-ink dark:text-ink-dark focus:border-terracotta focus:ring-1 focus:ring-terracotta focus:outline-none cursor-pointer"
             >
-              <option value="">Select category...</option>
+              <option value="" className="text-ink-muted bg-white dark:bg-paper-cardDark">
+                Select category...
+              </option>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id} className="text-ink dark:text-ink-dark bg-white dark:bg-paper-cardDark py-1">
+                  {c.name}
+                </option>
               ))}
             </select>
             {errors.categoryId && (
               <p className="text-xs text-brick font-medium mt-1">{errors.categoryId.message}</p>
+            )}
+
+            {/* Custom Category Input for 'Others' */}
+            {isOtherCategory && (
+              <div className="mt-3 p-3 rounded-lg bg-paper-sand/20 dark:bg-paper-sandDark/20 border border-paper-sand dark:border-paper-sandDark space-y-1 animate-fadeIn">
+                <Input
+                  label="Specify Other Category"
+                  placeholder="e.g. Drafter, Musical Instrument, Art Supplies..."
+                  required
+                  {...register('customCategory')}
+                  error={errors.customCategory?.message}
+                  helperText="Tell borrowers what type of item this is."
+                />
+              </div>
             )}
           </div>
 
@@ -150,11 +257,11 @@ export const PostItemPage = () => {
             </label>
             <select
               {...register('condition')}
-              className="w-full px-3.5 py-2.5 rounded-lg text-xs bg-white dark:bg-paper-cardDark border border-paper-sand dark:border-paper-sandDark text-ink dark:text-ink-dark focus:border-terracotta focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg text-xs bg-white dark:bg-paper-cardDark border border-paper-sand dark:border-paper-sandDark text-ink dark:text-ink-dark focus:border-terracotta focus:ring-1 focus:ring-terracotta focus:outline-none cursor-pointer"
             >
-              <option value="LIKE_NEW">Like New (Mint, barely used)</option>
-              <option value="GOOD">Good Condition (Working, minor cosmetic wear)</option>
-              <option value="FAIR">Fair (Functional, noticeable wear)</option>
+              <option value="LIKE_NEW" className="text-ink dark:text-ink-dark bg-white dark:bg-paper-cardDark">Like New (Mint, barely used)</option>
+              <option value="GOOD" className="text-ink dark:text-ink-dark bg-white dark:bg-paper-cardDark">Good Condition (Working, minor cosmetic wear)</option>
+              <option value="FAIR" className="text-ink dark:text-ink-dark bg-white dark:bg-paper-cardDark">Fair (Functional, noticeable wear)</option>
             </select>
           </div>
         </div>
@@ -177,15 +284,33 @@ export const PostItemPage = () => {
             </label>
             <select
               {...register('handoverPointId')}
-              className="w-full px-3.5 py-2.5 rounded-lg text-xs bg-white dark:bg-paper-cardDark border border-paper-sand dark:border-paper-sandDark text-ink dark:text-ink-dark focus:border-terracotta focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-lg text-xs bg-white dark:bg-paper-cardDark border border-paper-sand dark:border-paper-sandDark text-ink dark:text-ink-dark focus:border-terracotta focus:ring-1 focus:ring-terracotta focus:outline-none cursor-pointer"
             >
-              <option value="">Select campus location...</option>
+              <option value="" className="text-ink-muted bg-white dark:bg-paper-cardDark">
+                Select campus location...
+              </option>
               {campusPoints.map((pt) => (
-                <option key={pt.id} value={pt.id}>{pt.name} ({pt.zone})</option>
+                <option key={pt.id} value={pt.id} className="text-ink dark:text-ink-dark bg-white dark:bg-paper-cardDark py-1">
+                  {pt.name} {pt.zone ? `(${pt.zone})` : ''}
+                </option>
               ))}
             </select>
             {errors.handoverPointId && (
               <p className="text-xs text-brick font-medium mt-1">{errors.handoverPointId.message}</p>
+            )}
+
+            {/* Custom Handover Location for 'Others' */}
+            {isOtherHandover && (
+              <div className="mt-3 p-3 rounded-lg bg-paper-sand/20 dark:bg-paper-sandDark/20 border border-paper-sand dark:border-paper-sandDark space-y-1 animate-fadeIn">
+                <Input
+                  label="Specify Handover Spot"
+                  placeholder="e.g. Mechanical Workshop, Hostel 4 Common Room..."
+                  required
+                  {...register('customHandoverPoint')}
+                  error={errors.customHandoverPoint?.message}
+                  helperText="Specify a safe, well-lit public campus location."
+                />
+              </div>
             )}
           </div>
         </div>

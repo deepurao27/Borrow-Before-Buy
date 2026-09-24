@@ -301,10 +301,10 @@ export const TransactionDetailPage = () => {
                   <Calendar className="w-3.5 h-3.5" />
                   {new Date(transaction.startAt).toLocaleDateString()} &ndash; {new Date(transaction.dueAt).toLocaleDateString()}
                 </span>
-                {transaction.item.handoverPoint && (
+                {(transaction.item.customHandoverPoint || transaction.item.handoverPoint) && (
                   <span className="flex items-center gap-1 font-medium text-ink dark:text-ink-dark">
                     <MapPin className="w-3.5 h-3.5 text-terracotta" />
-                    Handover Point: {transaction.item.handoverPoint.name}
+                    Handover Point: {transaction.item.customHandoverPoint || transaction.item.handoverPoint?.name}
                   </span>
                 )}
               </div>
@@ -439,7 +439,7 @@ export const TransactionDetailPage = () => {
                     {isLender ? 'Show Handover QR Code' : 'Scan Lender’s QR Code'}
                   </h3>
                   <p className="text-xs text-ink-muted dark:text-ink-darkMuted mt-1">
-                    Meet at <strong>{transaction.item.handoverPoint?.name || 'campus meeting point'}</strong>.
+                    Meet at <strong>{transaction.item.customHandoverPoint || transaction.item.handoverPoint?.name || 'campus meeting point'}</strong>.
                     Exchange the item and confirm handover.
                   </p>
                 </div>

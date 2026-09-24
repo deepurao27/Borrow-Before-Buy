@@ -9,9 +9,31 @@ import { Button } from '../../components/ui/Button';
 import { NoticeDisclaimer } from '../../components/ui/NoticeDisclaimer';
 import { Search, Filter, PlusCircle, RotateCcw } from 'lucide-react';
 
+const FALLBACK_CATEGORIES = [
+  { id: 'c0000000-0000-4000-8000-000000000001', name: 'Calculators', slug: 'calculators' },
+  { id: 'c0000000-0000-4000-8000-000000000002', name: 'Cables & Adapters', slug: 'cables-adapters' },
+  { id: 'c0000000-0000-4000-8000-000000000003', name: 'Lab Gear', slug: 'lab-gear' },
+  { id: 'c0000000-0000-4000-8000-000000000004', name: 'Stationery & Drawing', slug: 'stationery' },
+  { id: 'c0000000-0000-4000-8000-000000000005', name: 'Electronics & Dev Boards', slug: 'electronics' },
+  { id: 'c0000000-0000-4000-8000-000000000006', name: 'Tripods & Cameras', slug: 'photography' },
+  { id: 'c0000000-0000-4000-8000-000000000007', name: 'Sports Equipment', slug: 'sports' },
+  { id: 'c0000000-0000-4000-8000-000000000008', name: 'Textbooks & Notes', slug: 'books' },
+  { id: 'c0000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others' }
+];
+
+const FALLBACK_CAMPUS_POINTS = [
+  { id: 'p0000000-0000-4000-8000-000000000001', name: 'Library Steps', zone: 'Central Campus' },
+  { id: 'p0000000-0000-4000-8000-000000000002', name: 'Main Gate', zone: 'North Entrance' },
+  { id: 'p0000000-0000-4000-8000-000000000003', name: 'Canteen', zone: 'Student Activity Center' },
+  { id: 'p0000000-0000-4000-8000-000000000004', name: 'Block A Lobby', zone: 'Academic Block A' },
+  { id: 'p0000000-0000-4000-8000-000000000005', name: 'Sports Pavilion', zone: 'Athletic Grounds' },
+  { id: 'p0000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location' }
+];
+
 export const SearchBrowsePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+
   const selectedCategory = searchParams.get('category') || '';
   const selectedCondition = searchParams.get('condition') || '';
   const selectedPoint = searchParams.get('point') || '';
@@ -21,14 +43,44 @@ export const SearchBrowsePage = () => {
     queryKey: ['categories'],
     queryFn: () => apiClient('/categories')
   });
-  const categories = categoriesRes?.data || [];
+
+  const categories = React.useMemo(() => {
+    let list = categoriesRes?.data && categoriesRes.data.length > 0
+      ? [...categoriesRes.data]
+      : [...FALLBACK_CATEGORIES];
+
+    if (!list.some((c) => c.slug === 'others' || c.name.toLowerCase() === 'others')) {
+      list.push({ id: 'c0000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others' });
+    }
+
+    return list.sort((a, b) => {
+      if (a.slug === 'others' || a.name.toLowerCase() === 'others') return 1;
+      if (b.slug === 'others' || b.name.toLowerCase() === 'others') return -1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [categoriesRes]);
 
   // Fetch Campus Points
   const { data: pointsRes } = useQuery({
     queryKey: ['campus-points'],
     queryFn: () => apiClient('/campus-points')
   });
-  const campusPoints = pointsRes?.data || [];
+
+  const campusPoints = React.useMemo(() => {
+    let list = pointsRes?.data && pointsRes.data.length > 0
+      ? [...pointsRes.data]
+      : [...FALLBACK_CAMPUS_POINTS];
+
+    if (!list.some((p) => p.name.toLowerCase() === 'others')) {
+      list.push({ id: 'p0000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location' });
+    }
+
+    return list.sort((a, b) => {
+      if (a.name.toLowerCase() === 'others') return 1;
+      if (b.name.toLowerCase() === 'others') return -1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [pointsRes]);
 
   // Fetch Items matching filters
   const { data: itemsRes, isLoading, refetch } = useQuery({
@@ -43,8 +95,7 @@ export const SearchBrowsePage = () => {
       if (selectedCondition) params.append('condition', selectedCondition);
       if (selectedPoint) params.append('handoverPointId', selectedPoint);
       return apiClient(`/items?${params.toString()}`);
-    },
-    enabled: categories.length > 0
+    }
   });
 
   const items = itemsRes?.data || [];

@@ -39,7 +39,7 @@ export const ItemCard = ({ item, tilt = 'none' }) => {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-ink-light dark:text-ink-darkMuted space-y-1">
                 <Tag className="w-8 h-8 opacity-40" />
-                <span className="text-[11px] font-medium">{item.category?.name || 'Item'}</span>
+                <span className="text-[11px] font-medium">{item.customCategory || item.category?.name || 'Item'}</span>
               </div>
             )}
 
@@ -52,11 +52,11 @@ export const ItemCard = ({ item, tilt = 'none' }) => {
           {/* Details */}
           <div>
             <div className="flex items-center gap-1.5 text-[11px] text-ink-muted dark:text-ink-darkMuted mb-1 font-semibold">
-              <span>{item.category?.name}</span>
+              <span className="truncate max-w-[120px]">{item.customCategory || item.category?.name}</span>
               <span>•</span>
-              <span className="flex items-center gap-0.5 text-terracotta">
-                <MapPin className="w-3 h-3" />
-                {item.handoverPoint?.name}
+              <span className="flex items-center gap-0.5 text-terracotta truncate max-w-[120px]">
+                <MapPin className="w-3 h-3 shrink-0" />
+                {item.customHandoverPoint || item.handoverPoint?.name}
               </span>
             </div>
 

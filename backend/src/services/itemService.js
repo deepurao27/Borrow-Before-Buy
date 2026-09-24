@@ -9,9 +9,11 @@ export const createItem = async (ownerId, data) => {
       title: data.title,
       description: data.description,
       categoryId: data.categoryId,
+      customCategory: data.customCategory || null,
       condition: data.condition,
       securityAmount: data.securityAmount,
       handoverPointId: data.handoverPointId,
+      customHandoverPoint: data.customHandoverPoint || null,
       status: 'ACTIVE'
     },
     include: {

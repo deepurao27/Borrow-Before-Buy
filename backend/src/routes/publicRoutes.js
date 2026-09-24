@@ -41,15 +41,63 @@ router.get('/public/stats', async (req, res, next) => {
   }
 });
 
+export const DEFAULT_CATEGORIES = [
+  { id: 'c0000000-0000-4000-8000-000000000001', name: 'Calculators', slug: 'calculators', icon: 'Calculator', typicalPriceInr: 1200 },
+  { id: 'c0000000-0000-4000-8000-000000000002', name: 'Cables & Adapters', slug: 'cables-adapters', icon: 'Cable', typicalPriceInr: 450 },
+  { id: 'c0000000-0000-4000-8000-000000000003', name: 'Lab Gear', slug: 'lab-gear', icon: 'FlaskConical', typicalPriceInr: 600 },
+  { id: 'c0000000-0000-4000-8000-000000000004', name: 'Stationery & Drawing', slug: 'stationery', icon: 'PenTool', typicalPriceInr: 350 },
+  { id: 'c0000000-0000-4000-8000-000000000005', name: 'Electronics & Dev Boards', slug: 'electronics', icon: 'Cpu', typicalPriceInr: 1500 },
+  { id: 'c0000000-0000-4000-8000-000000000006', name: 'Tripods & Cameras', slug: 'photography', icon: 'Camera', typicalPriceInr: 2200 },
+  { id: 'c0000000-0000-4000-8000-000000000007', name: 'Sports Equipment', slug: 'sports', icon: 'Trophy', typicalPriceInr: 800 },
+  { id: 'c0000000-0000-4000-8000-000000000008', name: 'Textbooks & Notes', slug: 'books', icon: 'BookOpen', typicalPriceInr: 750 },
+  { id: 'c0000000-0000-4000-8000-000000000009', name: 'Others', slug: 'others', icon: 'MoreHorizontal', typicalPriceInr: 500 }
+];
+
+export const DEFAULT_CAMPUS_POINTS = [
+  { id: 'p0000000-0000-4000-8000-000000000001', name: 'Library Steps', zone: 'Central Campus', isActive: true },
+  { id: 'p0000000-0000-4000-8000-000000000002', name: 'Main Gate', zone: 'North Entrance', isActive: true },
+  { id: 'p0000000-0000-4000-8000-000000000003', name: 'Canteen', zone: 'Student Activity Center', isActive: true },
+  { id: 'p0000000-0000-4000-8000-000000000004', name: 'Block A Lobby', zone: 'Academic Block A', isActive: true },
+  { id: 'p0000000-0000-4000-8000-000000000005', name: 'Sports Pavilion', zone: 'Athletic Grounds', isActive: true },
+  { id: 'p0000000-0000-4000-8000-000000000006', name: 'Others', zone: 'Custom Spot / Designated Location', isActive: true }
+];
+
 /**
  * GET /api/categories
- * List all categories
+ * List all categories with 'Others' placed at the end
  */
 router.get('/categories', async (req, res, next) => {
   try {
-    const categories = await prisma.category.findMany({
+    let categories = await prisma.category.findMany({
       orderBy: { name: 'asc' }
     }).catch(() => []);
+
+    if (!categories || categories.length === 0) {
+      return sendSuccess(res, DEFAULT_CATEGORIES);
+    }
+
+    // Ensure 'Others' category is present
+    const hasOthers = categories.some((c) => c.slug === 'others' || c.name.toLowerCase() === 'others');
+    if (!hasOthers) {
+      try {
+        const othersCat = await prisma.category.upsert({
+          where: { slug: 'others' },
+          update: {},
+          create: { name: 'Others', slug: 'others', icon: 'MoreHorizontal', typicalPriceInr: 500 }
+        });
+        categories.push(othersCat);
+      } catch {
+        categories.push(DEFAULT_CATEGORIES.find((c) => c.slug === 'others'));
+      }
+    }
+
+    // Sort with 'Others' always at the end
+    categories.sort((a, b) => {
+      if (a.slug === 'others' || a.name.toLowerCase() === 'others') return 1;
+      if (b.slug === 'others' || b.name.toLowerCase() === 'others') return -1;
+      return a.name.localeCompare(b.name);
+    });
+
     return sendSuccess(res, categories);
   } catch (err) {
     return next(err);
@@ -58,14 +106,41 @@ router.get('/categories', async (req, res, next) => {
 
 /**
  * GET /api/campus-points
- * List all campus handover points
+ * List all campus handover points with 'Others' placed at the end
  */
 router.get('/campus-points', async (req, res, next) => {
   try {
-    const points = await prisma.campusPoint.findMany({
+    let points = await prisma.campusPoint.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' }
     }).catch(() => []);
+
+    if (!points || points.length === 0) {
+      return sendSuccess(res, DEFAULT_CAMPUS_POINTS);
+    }
+
+    // Ensure 'Others' campus point is present
+    const hasOthers = points.some((p) => p.name.toLowerCase() === 'others');
+    if (!hasOthers) {
+      try {
+        const othersPt = await prisma.campusPoint.upsert({
+          where: { name: 'Others' },
+          update: {},
+          create: { name: 'Others', zone: 'Custom Spot / Designated Location', isActive: true }
+        });
+        points.push(othersPt);
+      } catch {
+        points.push(DEFAULT_CAMPUS_POINTS.find((p) => p.name === 'Others'));
+      }
+    }
+
+    // Sort with 'Others' always at the end
+    points.sort((a, b) => {
+      if (a.name.toLowerCase() === 'others') return 1;
+      if (b.name.toLowerCase() === 'others') return -1;
+      return a.name.localeCompare(b.name);
+    });
+
     return sendSuccess(res, points);
   } catch (err) {
     return next(err);

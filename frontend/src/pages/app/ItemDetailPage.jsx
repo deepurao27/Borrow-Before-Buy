@@ -188,7 +188,7 @@ export const ItemDetailPage = () => {
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted dark:text-ink-darkMuted mb-2">
                 <span className="bg-paper-sand/50 dark:bg-paper-sandDark/50 px-2.5 py-0.5 rounded-full font-bold">
-                  {item.category?.name}
+                  {item.customCategory || item.category?.name}
                 </span>
                 <span>•</span>
                 <span className="text-sage font-bold flex items-center gap-1">
@@ -227,7 +227,7 @@ export const ItemDetailPage = () => {
               <div>
                 <span className="font-bold block">Campus Handover Location:</span>
                 <span className="text-ink-muted dark:text-ink-darkMuted">
-                  {item.handoverPoint?.name} ({item.handoverPoint?.zone})
+                  {item.customHandoverPoint || (item.handoverPoint ? `${item.handoverPoint.name} (${item.handoverPoint.zone})` : 'Campus Location')}
                 </span>
               </div>
             </div>

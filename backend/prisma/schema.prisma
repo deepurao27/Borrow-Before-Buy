@@ -210,13 +210,15 @@ model CampusPoint {
 model Item {
   id               String        @id @default(uuid())
   ownerId          String        @map("owner_id")
-  categoryId       String        @map("category_id")
-  title            String
-  description      String
-  condition        ItemCondition
-  securityAmount   Int           @map("security_amount")
-  handoverPointId  String        @map("handover_point_id")
-  status           ItemStatus    @default(ACTIVE)
+  categoryId           String        @map("category_id")
+  customCategory       String?       @map("custom_category")
+  title                String
+  description          String
+  condition            ItemCondition
+  securityAmount       Int           @map("security_amount")
+  handoverPointId      String        @map("handover_point_id")
+  customHandoverPoint  String?       @map("custom_handover_point")
+  status               ItemStatus    @default(ACTIVE)
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 

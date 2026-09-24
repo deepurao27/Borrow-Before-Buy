@@ -155,7 +155,7 @@ export const RequestsPage = () => {
                     </div>
                   ) : (
                     <span className="font-semibold text-ink dark:text-ink-dark">
-                      Handover: {req.item?.handoverPoint?.name}
+                      Handover: {req.item?.customHandoverPoint || req.item?.handoverPoint?.name}
                     </span>
                   )}
 

@@ -318,7 +318,9 @@ export const ProfilePage = () => {
                     </h3>
                     <div className="flex items-center gap-2 text-xs text-ink-muted mt-1">
                       <span>Deposit: ₹{item.securityAmount}</span>
-                      {item.handoverPoint && <span>&bull; {item.handoverPoint.name}</span>}
+                      {(item.customHandoverPoint || item.handoverPoint) && (
+                        <span>&bull; {item.customHandoverPoint || item.handoverPoint.name}</span>
+                      )}
                     </div>
                   </div>
                 </Card>

@@ -201,10 +201,10 @@ export const TransactionsListPage = () => {
                           <Clock className="w-3.5 h-3.5" />
                           Due: {new Date(tx.dueAt).toLocaleDateString()}
                         </span>
-                        {tx.item.handoverPoint && (
+                        {(tx.item.customHandoverPoint || tx.item.handoverPoint) && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5 text-terracotta" />
-                            {tx.item.handoverPoint.name}
+                            {tx.item.customHandoverPoint || tx.item.handoverPoint?.name}
                           </span>
                         )}
                         <span className="flex items-center gap-1 font-semibold text-ink dark:text-ink-dark">

@@ -12,7 +12,8 @@ async function main() {
     { name: 'Electronics & Dev Boards', slug: 'electronics', icon: 'Cpu', typicalPriceInr: 1500 },
     { name: 'Tripods & Cameras', slug: 'photography', icon: 'Camera', typicalPriceInr: 2200 },
     { name: 'Sports Equipment', slug: 'sports', icon: 'Trophy', typicalPriceInr: 800 },
-    { name: 'Textbooks & Notes', slug: 'books', icon: 'BookOpen', typicalPriceInr: 750 }
+    { name: 'Textbooks & Notes', slug: 'books', icon: 'BookOpen', typicalPriceInr: 750 },
+    { name: 'Others', slug: 'others', icon: 'MoreHorizontal', typicalPriceInr: 500 }
   ];
 
   for (const cat of categories) {
@@ -28,7 +29,8 @@ async function main() {
     { name: 'Main Gate', zone: 'North Entrance' },
     { name: 'Canteen', zone: 'Student Activity Center' },
     { name: 'Block A Lobby', zone: 'Academic Block A' },
-    { name: 'Sports Pavilion', zone: 'Athletic Grounds' }
+    { name: 'Sports Pavilion', zone: 'Athletic Grounds' },
+    { name: 'Others', zone: 'Custom Spot / Designated Location' }
   ];
 
   for (const pt of campusPoints) {
