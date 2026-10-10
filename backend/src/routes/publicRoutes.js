@@ -18,6 +18,44 @@ router.get('/health', (req, res) => {
 });
 
 /**
+ * GET /api/public/db-debug
+ * Diagnostic endpoint for database connectivity and Prisma state
+ */
+router.get('/public/db-debug', async (req, res) => {
+  const sanitizeUrl = (str) => {
+    if (!str) return 'NOT_SET';
+    return str.replace(/:([^:@]+)@/, ':****@');
+  };
+
+  let dbStatus = 'testing';
+  let dbError = null;
+  let userCount = null;
+
+  try {
+    userCount = await prisma.user.count();
+    dbStatus = 'connected';
+  } catch (err) {
+    dbStatus = 'failed';
+    dbError = {
+      name: err.name,
+      code: err.code,
+      message: err.message
+    };
+  }
+
+  return res.json({
+    nodeEnv: process.env.NODE_ENV,
+    databaseUrlSet: !!process.env.DATABASE_URL,
+    databaseUrlSanitized: sanitizeUrl(process.env.DATABASE_URL),
+    directUrlSet: !!process.env.DIRECT_URL,
+    directUrlSanitized: sanitizeUrl(process.env.DIRECT_URL),
+    dbStatus,
+    userCount,
+    dbError
+  });
+});
+
+/**
  * GET /api/public/stats
  * Real aggregate counts from database for the landing page
  */
