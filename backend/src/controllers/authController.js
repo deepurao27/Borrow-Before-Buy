@@ -78,7 +78,11 @@ export const login = async (req, res, next) => {
 
     return sendSuccess(
       res,
-      { user: result.user },
+      {
+        user: result.user,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken
+      },
       'Logged in successfully!'
     );
   } catch (err) {
@@ -107,7 +111,11 @@ export const verifyOtp = async (req, res, next) => {
 
     return sendSuccess(
       res,
-      { user: result.user },
+      {
+        user: result.user,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken
+      },
       'Logged in successfully via verification code!'
     );
   } catch (err) {
@@ -117,13 +125,17 @@ export const verifyOtp = async (req, res, next) => {
 
 export const refresh = async (req, res, next) => {
   try {
-    const rawRefreshToken = req.cookies?.[CONSTANTS.REFRESH_COOKIE_NAME];
+    const rawRefreshToken = req.cookies?.[CONSTANTS.REFRESH_COOKIE_NAME] || req.body?.refreshToken;
     const result = await refreshSession(rawRefreshToken);
 
     res.cookie(CONSTANTS.ACCESS_COOKIE_NAME, result.accessToken, getCookieOptions(false));
     res.cookie(CONSTANTS.REFRESH_COOKIE_NAME, result.refreshToken, getCookieOptions(true));
 
-    return sendSuccess(res, { user: result.user }, 'Session refreshed.');
+    return sendSuccess(res, {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken
+    }, 'Session refreshed.');
   } catch (err) {
     // Clear cookies on refresh failure
     res.clearCookie(CONSTANTS.ACCESS_COOKIE_NAME, getCookieOptions(false));

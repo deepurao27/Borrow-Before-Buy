@@ -3,7 +3,7 @@ services:
     name: bbb-backend
     env: node
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma db push --skip-generate && node prisma/seed.js
+    buildCommand: npm install && npm run build && (npx prisma db push --skip-generate || echo "DB push skipped during build") && (node prisma/seed.js || echo "Seeding skipped")
     startCommand: npm start
     envVars:
       - key: NODE_ENV

@@ -35,6 +35,11 @@ export const errorHandler = (err, req, res, next) => {
     return sendError(res, 'INVALID_FILE_UPLOAD', 'Unexpected file upload field or too many files.', 400);
   }
 
+  // Handle Prisma Initialization / Connection Errors
+  if (err.name === 'PrismaClientInitializationError' || err.message?.includes("Can't reach database server") || err.message?.includes('database server')) {
+    return sendError(res, 'DATABASE_UNAVAILABLE', 'Database connection failed. Please check your DATABASE_URL in Render or ensure PostgreSQL is running.', 503);
+  }
+
   // Handle Prisma Known Request Errors
   if (err.name === 'PrismaClientKnownRequestError' || (err.code && err.code.startsWith('P'))) {
     if (err.code === 'P2025') {

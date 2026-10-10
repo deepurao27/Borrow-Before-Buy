@@ -7,19 +7,39 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Bootstrap session via /auth/me
+  // Bootstrap session via localStorage cache + /auth/me
   useEffect(() => {
     let isMounted = true;
 
     const bootstrapAuth = async () => {
+      // 1. Immediately hydrate from localStorage if present
+      try {
+        const cachedUserStr = localStorage.getItem('bbb_user');
+        if (cachedUserStr) {
+          const cachedUser = JSON.parse(cachedUserStr);
+          if (cachedUser && isMounted) {
+            setUser(cachedUser);
+          }
+        }
+      } catch (e) {
+        // Ignore JSON parse errors
+      }
+
+      // 2. Verify with backend /auth/me
       try {
         const res = await apiClient('/auth/me');
         if (isMounted && res?.data?.user) {
           setUser(res.data.user);
+          localStorage.setItem('bbb_user', JSON.stringify(res.data.user));
         }
       } catch (err) {
         if (isMounted) {
-          setUser(null);
+          // If 401 or session expired, clear if no valid token
+          const token = localStorage.getItem('bbb_access_token');
+          if (!token) {
+            setUser(null);
+            localStorage.removeItem('bbb_user');
+          }
         }
       } finally {
         if (isMounted) {
@@ -33,6 +53,8 @@ export const AuthProvider = ({ children }) => {
     // Listen for session expiry from API client
     const handleSessionExpired = () => {
       setUser(null);
+      localStorage.removeItem('bbb_user');
+      localStorage.removeItem('bbb_access_token');
     };
 
     window.addEventListener('bbb:session-expired', handleSessionExpired);
@@ -42,8 +64,16 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, token = null) => {
     setUser(userData);
+    try {
+      if (userData) {
+        localStorage.setItem('bbb_user', JSON.stringify(userData));
+      }
+      if (token) {
+        localStorage.setItem('bbb_access_token', token);
+      }
+    } catch (e) {}
   };
 
   const logout = async () => {
@@ -52,6 +82,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       // Ignore logout failure
     } finally {
+      localStorage.removeItem('bbb_user');
+      localStorage.removeItem('bbb_access_token');
+      localStorage.removeItem('bbb_refresh_token');
       setUser(null);
     }
   };

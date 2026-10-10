@@ -11,6 +11,7 @@ export const generateAccessToken = (user) => {
   return jwt.sign(
     {
       sub: user.id,
+      name: user.name,
       email: user.collegeEmail,
       role: user.role
     },

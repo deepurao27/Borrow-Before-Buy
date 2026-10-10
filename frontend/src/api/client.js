@@ -15,15 +15,19 @@ const onRefreshed = (success) => {
 /**
  * Universal Fetch Client with:
  * 1. Automatic inclusion of httpOnly cookies (credentials: "include")
- * 2. CSRF Header on state-changing requests (X-Requested-With: bbb)
- * 3. Silent refresh on 401 Unauthorized (deduplicated across parallel calls)
+ * 2. Authorization Bearer header for cross-origin third-party cookie compatibility
+ * 3. CSRF Header on state-changing requests (X-Requested-With: bbb)
+ * 4. Silent refresh on 401 Unauthorized (deduplicated across parallel calls)
  */
 export const apiClient = async (endpoint, options = {}) => {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
+  const storedToken = typeof window !== 'undefined' ? localStorage.getItem('bbb_access_token') : null;
+
   const headers = {
     'Content-Type': 'application/json',
     'X-Requested-With': 'bbb',
+    ...(storedToken ? { 'Authorization': `Bearer ${storedToken}` } : {}),
     ...(options.headers || {})
   };
 
@@ -59,28 +63,45 @@ export const apiClient = async (endpoint, options = {}) => {
     isRefreshing = true;
 
     try {
+      const storedRefreshToken = typeof window !== 'undefined' ? localStorage.getItem('bbb_refresh_token') : null;
       const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'bbb'
+          'X-Requested-With': 'bbb',
+          ...(storedToken ? { 'Authorization': `Bearer ${storedToken}` } : {})
         },
-        credentials: 'include'
+        credentials: 'include',
+        body: JSON.stringify({ refreshToken: storedRefreshToken })
       });
 
       if (refreshRes.ok) {
+        const refreshData = await refreshRes.json().catch(() => null);
+        const newAccessToken = refreshData?.data?.accessToken || refreshData?.accessToken;
+        if (newAccessToken && typeof window !== 'undefined') {
+          localStorage.setItem('bbb_access_token', newAccessToken);
+        }
         isRefreshing = false;
         onRefreshed(true);
         return apiClient(endpoint, options);
       } else {
         isRefreshing = false;
         onRefreshed(false);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('bbb_access_token');
+          localStorage.removeItem('bbb_refresh_token');
+          localStorage.removeItem('bbb_user');
+        }
         window.dispatchEvent(new CustomEvent('bbb:session-expired'));
         throw new Error('SESSION_EXPIRED');
       }
     } catch (err) {
       isRefreshing = false;
       onRefreshed(false);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('bbb_access_token');
+        localStorage.removeItem('bbb_refresh_token');
+      }
       window.dispatchEvent(new CustomEvent('bbb:session-expired'));
       throw err;
     }
@@ -89,6 +110,18 @@ export const apiClient = async (endpoint, options = {}) => {
   const contentType = response.headers.get('content-type');
   const isJson = contentType && contentType.includes('application/json');
   const data = isJson ? await response.json() : await response.text();
+
+  // Automatically save returned access token & refresh token
+  if (response.ok && isJson && typeof window !== 'undefined') {
+    const newAccessToken = data?.data?.accessToken || data?.accessToken;
+    const newRefreshToken = data?.data?.refreshToken || data?.refreshToken;
+    if (newAccessToken) {
+      localStorage.setItem('bbb_access_token', newAccessToken);
+    }
+    if (newRefreshToken) {
+      localStorage.setItem('bbb_refresh_token', newRefreshToken);
+    }
+  }
 
   if (!response.ok) {
     const error = new Error(data?.error?.message || 'Request failed');
