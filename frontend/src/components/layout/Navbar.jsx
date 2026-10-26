@@ -16,14 +16,18 @@ import {
   LogOut,
   ShieldCheck,
   HelpCircle,
-  User
+  User,
+  Sparkles,
+  Users
 } from 'lucide-react';
-
+import { toast } from 'sonner';
+import { MOCK_USERS } from '../../api/mockData';
 
 export const Navbar = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, login, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userSwitcherOpen, setUserSwitcherOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,10 +36,16 @@ export const Navbar = () => {
     navigate('/');
   };
 
+  const handleSwitchUser = (targetUser) => {
+    login(targetUser, 'mock_token_' + Date.now());
+    setUserSwitcherOpen(false);
+    toast.success(`Switched active profile to ${targetUser.name}!`);
+  };
+
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-40 bg-paper-light/90 dark:bg-paper-dark/90 backdrop-blur-md border-b border-paper-sand dark:border-paper-sandDark transition-colors">
+    <nav className="sticky top-0 z-40 bg-paper-light/95 dark:bg-paper-dark/95 backdrop-blur-md border-b border-paper-sand dark:border-paper-sandDark transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
@@ -64,6 +74,15 @@ export const Navbar = () => {
               Browse Items
             </Link>
             <Link
+              to="/lend"
+              className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                isActive('/lend') || isActive('/post-item') ? 'text-terracotta font-semibold' : 'text-ink-muted dark:text-ink-darkMuted hover:text-ink dark:hover:text-ink-dark'
+              }`}
+            >
+              <PlusCircle className="w-3.5 h-3.5 text-terracotta" />
+              Lend Gear
+            </Link>
+            <Link
               to="/how-it-works"
               className={`text-sm font-medium transition-colors ${
                 isActive('/how-it-works') ? 'text-terracotta font-semibold' : 'text-ink-muted dark:text-ink-darkMuted hover:text-ink dark:hover:text-ink-dark'
@@ -87,6 +106,7 @@ export const Navbar = () => {
             >
               Leaderboard
             </Link>
+
             {isAuthenticated && (
               <>
                 <Link
@@ -119,20 +139,19 @@ export const Navbar = () => {
             )}
           </div>
 
-
           {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-3">
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-ink-muted dark:text-ink-darkMuted hover:text-ink dark:hover:text-ink-dark hover:bg-paper-sand/40 dark:hover:bg-paper-sandDark/40 transition-colors"
+              className="p-2 rounded-lg text-ink-muted dark:text-ink-darkMuted hover:text-ink dark:hover:text-ink-dark hover:bg-paper-sand/40 dark:hover:bg-paper-sandDark/40 transition-colors cursor-pointer"
               aria-label="Toggle theme"
             >
               {isDark ? <Sun className="w-4 h-4 text-marigold" /> : <Moon className="w-4 h-4" />}
             </button>
 
             {isAuthenticated ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 relative">
                 {(user?.role === 'ADMIN' || user?.role === 'MODERATOR') && (
                   <Link
                     to="/admin"
@@ -142,24 +161,64 @@ export const Navbar = () => {
                     Admin
                   </Link>
                 )}
-                <Link to="/post-item">
-                  <Button variant="primary" size="sm" className="gap-1.5 shadow-sm">
+
+                <Link to="/lend">
+                  <Button variant="primary" size="sm" className="gap-1.5 shadow-sm font-bold">
                     <PlusCircle className="w-4 h-4" />
                     Lend an Item
                   </Button>
                 </Link>
 
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 pl-2 border-l border-paper-sand dark:border-paper-sandDark hover:opacity-80 transition-opacity"
-                  title="View your public profile & trust score"
-                >
-                  <Avatar name={user.name} size="sm" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-ink dark:text-ink-dark leading-tight">{user.name.split(' ')[0]}</span>
-                    <span className="text-[10px] text-sage font-semibold">Verified</span>
-                  </div>
-                </Link>
+                {/* Profile Pill with Switcher Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setUserSwitcherOpen(!userSwitcherOpen)}
+                    className="flex items-center gap-2 pl-2 border-l border-paper-sand dark:border-paper-sandDark hover:opacity-85 transition-opacity cursor-pointer text-left"
+                    title="Click to switch student profile or view trust score"
+                  >
+                    <Avatar name={user.name} size="sm" />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-ink dark:text-ink-dark leading-tight flex items-center gap-1">
+                        {user.name.split(' ')[0]}
+                        <span className="text-[10px] text-sage font-bold">⭐ {user.lenderScore || 95}</span>
+                      </span>
+                      <span className="text-[10px] text-ink-muted hover:text-terracotta font-semibold">
+                        Switch Profile ▾
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Quick Profile Switcher Dropdown */}
+                  {userSwitcherOpen && (
+                    <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-paper-cardDark border border-paper-sand dark:border-paper-sandDark shadow-paperHover py-2 z-50">
+                      <div className="px-3 py-1.5 border-b border-paper-sand dark:border-paper-sandDark text-[11px] font-bold text-ink-muted uppercase">
+                        Switch Student Profile
+                      </div>
+                      {MOCK_USERS.slice(0, 3).map((u) => (
+                        <button
+                          key={u.id}
+                          onClick={() => handleSwitchUser(u)}
+                          className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-paper-sand/20 dark:hover:bg-paper-sandDark/20 cursor-pointer ${
+                            user.collegeEmail === u.collegeEmail ? 'font-bold text-terracotta' : 'text-ink dark:text-ink-dark'
+                          }`}
+                        >
+                          <span>{u.name}</span>
+                          <span className="text-[10px] text-sage font-bold">⭐ {u.lenderScore}</span>
+                        </button>
+                      ))}
+                      <div className="pt-1 mt-1 border-t border-paper-sand dark:border-paper-sandDark">
+                        <Link
+                          to="/profile"
+                          onClick={() => setUserSwitcherOpen(false)}
+                          className="block px-3 py-1.5 text-xs text-ink-muted hover:text-ink"
+                        >
+                          View Full Profile
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={handleLogout}
                   title="Log out"
@@ -169,15 +228,20 @@ export const Navbar = () => {
                 </button>
               </div>
             ) : (
-
               <div className="flex items-center gap-2">
+                <Link to="/lend">
+                  <Button variant="secondary" size="sm" className="gap-1.5 font-bold">
+                    <PlusCircle className="w-3.5 h-3.5 text-terracotta" />
+                    Lend Gear
+                  </Button>
+                </Link>
                 <Link to="/login">
                   <Button variant="ghost" size="sm">
                     Log in
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="accent" size="sm">
+                  <Button variant="accent" size="sm" className="font-bold">
                     Get started
                   </Button>
                 </Link>
@@ -215,6 +279,13 @@ export const Navbar = () => {
             Browse Items
           </Link>
           <Link
+            to="/lend"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-sm font-bold text-terracotta bg-terracotta/10"
+          >
+            + Lend Gear to Batch
+          </Link>
+          <Link
             to="/how-it-works"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-md text-sm font-medium text-ink dark:text-ink-dark hover:bg-paper-light dark:hover:bg-paper-dark"
@@ -238,28 +309,12 @@ export const Navbar = () => {
 
           {isAuthenticated ? (
             <div className="pt-3 border-t border-paper-sand dark:border-paper-sandDark space-y-2">
-              {(user?.role === 'ADMIN' || user?.role === 'MODERATOR') && (
-                <Link
-                  to="/admin"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-md text-sm font-bold text-terracotta bg-terracotta/10"
-                >
-                  Admin / Moderation Console
-                </Link>
-              )}
               <Link
                 to="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 rounded-md text-sm font-medium text-ink dark:text-ink-dark"
               >
                 Student Dashboard
-              </Link>
-              <Link
-                to="/profile"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-ink dark:text-ink-dark"
-              >
-                My Profile & Trust Score
               </Link>
               <Link
                 to="/requests"
@@ -274,18 +329,6 @@ export const Navbar = () => {
                 className="block px-3 py-2 rounded-md text-sm font-medium text-ink dark:text-ink-dark"
               >
                 Borrowing & Lending Exchanges
-              </Link>
-              <Link
-                to="/post-item"
-
-
-                onClick={() => setMobileMenuOpen(false)}
-                className="block"
-              >
-                <Button variant="primary" size="md" className="w-full gap-2">
-                  <PlusCircle className="w-4 h-4" />
-                  Lend an Item
-                </Button>
               </Link>
               <Button
                 variant="secondary"

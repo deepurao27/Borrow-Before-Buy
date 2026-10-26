@@ -38,6 +38,8 @@ export const AppRoutes = () => {
         <Route path="/safety" element={<SafetyPage />} />
         <Route path="/search" element={<SearchBrowsePage />} />
         <Route path="/items" element={<Navigate to="/search" replace />} />
+        <Route path="/board" element={<Navigate to="/search" replace />} />
+        <Route path="/listings" element={<Navigate to="/search" replace />} />
         <Route path="/items/:id" element={<ItemDetailPage />} />
 
         {/* Auth Pages (Guest Only) */}
@@ -76,15 +78,9 @@ export const AppRoutes = () => {
           }
         />
 
-        {/* Protected Student Pages */}
-        <Route
-          path="/post-item"
-          element={
-            <ProtectedRoute>
-              <PostItemPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Lending Pages */}
+        <Route path="/lend" element={<PostItemPage />} />
+        <Route path="/post-item" element={<PostItemPage />} />
         <Route
           path="/requests"
           element={

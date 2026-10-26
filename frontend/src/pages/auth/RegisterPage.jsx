@@ -61,7 +61,7 @@ export const RegisterPage = () => {
         authLogin(res.data.user, res.data.accessToken);
       }
       toast.success('Account created and activated! Welcome to Borrow Before Buy.');
-      navigate('/board');
+      navigate('/search');
     } catch (err) {
       if (err.status === 503 || err.code === 'DATABASE_UNAVAILABLE' || err.message?.includes('Database') || err.status === 500) {
         const demoUser = {
@@ -76,7 +76,7 @@ export const RegisterPage = () => {
         };
         authLogin(demoUser, 'demo_token_' + Date.now());
         toast.success('Account created in fast demo mode! Welcome to Borrow Before Buy.');
-        navigate('/board');
+        navigate('/search');
       } else {
         toast.error(err.message || 'Registration failed. Please try again.');
       }
