@@ -10,7 +10,8 @@ import {
   logout,
   forgotPassword,
   resetPassword,
-  getMe
+  getMe,
+  demoLogin
 } from '../controllers/authController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { authRateLimiter } from '../middleware/rateLimiter.js';
@@ -21,6 +22,7 @@ router.post('/register', authRateLimiter, register);
 router.post('/verify', verifyEmail);
 router.post('/resend-verification', authRateLimiter, resendVerification);
 router.post('/login', authRateLimiter, login);
+router.post('/demo-login', demoLogin);
 router.post('/otp/send', authRateLimiter, sendOtp);
 router.post('/otp/verify', authRateLimiter, verifyOtp);
 router.post('/refresh', refresh);

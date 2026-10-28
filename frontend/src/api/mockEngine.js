@@ -26,7 +26,9 @@ const setStored = (key, value) => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch (e) {}
+  } catch {
+    // Ignore localStorage write error
+  }
 };
 
 // Initialize items if empty
@@ -309,7 +311,125 @@ export const mockEngine = {
     };
   },
 
-  // 13. Auth (OTP and Password Mock Handling)
+  // 13. Student Dashboard (Dual Role: Both Active Borrows & Active Lends)
+  getDashboard: (currentUser) => {
+    const user = currentUser || MOCK_USERS[1];
+    const items = getAllItems();
+    const requests = getStored(STORAGE_KEYS.REQUESTS, []);
+    const transactions = getStored(STORAGE_KEYS.TRANSACTIONS, []);
+
+    const userItems = items.filter((i) => i.ownerId === user.id || i.owner?.collegeEmail === user.collegeEmail);
+    const activeBorrowing = transactions.filter((t) => t.borrowerId === user.id || t.borrower?.collegeEmail === user.collegeEmail);
+    const activeLending = transactions.filter((t) => t.lenderId === user.id || t.lender?.collegeEmail === user.collegeEmail);
+    const pendingReceived = requests.filter((r) => (r.ownerId === user.id || r.owner?.collegeEmail === user.collegeEmail) && r.status === 'PENDING').length;
+    const pendingSent = requests.filter((r) => (r.borrowerId === user.id || r.borrower?.collegeEmail === user.collegeEmail) && r.status === 'PENDING').length;
+
+    return {
+      data: {
+        trustProfile: {
+          overallScore: Math.round(((user.lenderScore || 95) + (user.borrowerScore || 92)) / 2),
+          lenderScore: user.lenderScore || 95,
+          borrowerScore: user.borrowerScore || 92,
+          tier: { name: 'Tier 1 Verified Campus Peer' },
+          metrics: {
+            completedBorrows: activeBorrowing.filter((t) => t.status === 'COMPLETED').length + 4,
+            completedLends: activeLending.filter((t) => t.status === 'COMPLETED').length + 6,
+            onTimeReturns: 4,
+            onTimeRatePercent: 100
+          },
+          history: [
+            { id: 'th-1', delta: 5, eventType: 'Lent TI-84 Plus Calculator on time', roleContext: 'LENDER' },
+            { id: 'th-2', delta: 4, eventType: 'Returned Lab Coat in pristine condition', roleContext: 'BORROWER' }
+          ]
+        },
+        counts: {
+          activeBorrowing: activeBorrowing.length,
+          activeLending: activeLending.length,
+          dueSoon: 0,
+          pendingRequestsReceived: pendingReceived,
+          pendingRequestsSent: pendingSent
+        },
+        dueSoonItems: [],
+        activeBorrowing,
+        activeLending,
+        myListings: userItems
+      }
+    };
+  },
+
+  // 14. Student Public Profile
+  getProfile: (targetId, currentUser) => {
+    const activeUser = currentUser || MOCK_USERS[1];
+    let user = activeUser;
+    if (targetId && targetId !== 'me' && targetId !== activeUser.id) {
+      user = MOCK_USERS.find((u) => u.id === targetId || u.collegeEmail === targetId) || activeUser;
+    }
+    const items = getAllItems();
+    const activeListings = items.filter((i) => i.ownerId === user.id || i.owner?.collegeEmail === user.collegeEmail);
+
+    return {
+      data: {
+        user,
+        trustProfile: {
+          overallScore: Math.round(((user.lenderScore || 95) + (user.borrowerScore || 92)) / 2),
+          lenderScore: user.lenderScore || 95,
+          borrowerScore: user.borrowerScore || 92,
+          tier: { name: 'Verified Campus Sharer' },
+          metrics: {
+            completedBorrows: 4,
+            completedLends: 6,
+            onTimeReturns: 4,
+            onTimeRatePercent: 100
+          },
+          history: [
+            { id: 'th-1', delta: 5, eventType: 'Lent TI-84 Plus Calculator on time', roleContext: 'LENDER' },
+            { id: 'th-2', delta: 4, eventType: 'Returned Lab Coat in pristine condition', roleContext: 'BORROWER' }
+          ]
+        },
+        ratings: {
+          average: 4.9,
+          count: 3,
+          reviews: [
+            {
+              id: 'rev-1',
+              reviewer: MOCK_USERS[0],
+              rating: 5,
+              comment: 'Great peer! Returned the gear cleanly and prompt on time.',
+              createdAt: new Date(Date.now() - 86400000 * 3).toISOString()
+            }
+          ]
+        },
+        activeListings
+      }
+    };
+  },
+
+  // 15. Campus Leaderboard
+  getLeaderboard: () => {
+    return {
+      data: MOCK_USERS.map((u, idx) => ({
+        ...u,
+        rank: idx + 1,
+        overallScore: Math.round(((u.lenderScore || 90) + (u.borrowerScore || 90)) / 2),
+        totalExchanges: 12 - idx * 2
+      }))
+    };
+  },
+
+  // 16. Demo / 1-Click Login
+  demoLogin: (targetUserId) => {
+    const user = MOCK_USERS.find((u) => u.id === targetUserId) || MOCK_USERS[1];
+    return {
+      data: {
+        user,
+        accessToken: `mock_token_${user.id}_${Date.now()}`,
+        refreshToken: `mock_refresh_${user.id}_${Date.now()}`
+      },
+      message: `Signed in as ${user.name}!`
+    };
+  },
+
+  // 17. Auth (OTP and Password Mock Handling)
   sendOtp: (email, name) => {
     return {
       success: true,

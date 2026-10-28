@@ -73,7 +73,9 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         localStorage.setItem('bbb_access_token', token);
       }
-    } catch (e) {}
+    } catch {
+      // Ignore localStorage write error
+    }
   };
 
   const logout = async () => {

@@ -41,7 +41,63 @@ async function main() {
     });
   }
 
-  console.log('Initial categories and campus points seeded successfully!');
+  console.log('Seeding demo campus students (each can both lend and borrow)...');
+  const demoStudents = [
+    {
+      id: 'user-arjun-001',
+      name: 'Arjun Sharma',
+      collegeEmail: 'arjun.student@iet.edu',
+      passwordHash: '$argon2id$v=19$m=65536,t=3,p=1$abcdefghijklmnopqrstuvwxyz012345$abcdefghijklmnopqrstuvwxyz012345',
+      department: 'Computer Science & Engineering',
+      year: 3,
+      role: 'STUDENT',
+      accountStatus: 'ACTIVE',
+      verifiedAt: new Date()
+    },
+    {
+      id: 'user-priya-002',
+      name: 'Priya Patel',
+      collegeEmail: 'priya.patel@iet.edu',
+      passwordHash: '$argon2id$v=19$m=65536,t=3,p=1$abcdefghijklmnopqrstuvwxyz012345$abcdefghijklmnopqrstuvwxyz012345',
+      department: 'Electrical & Electronics',
+      year: 2,
+      role: 'STUDENT',
+      accountStatus: 'ACTIVE',
+      verifiedAt: new Date()
+    },
+    {
+      id: 'user-rohan-003',
+      name: 'Rohan Verma',
+      collegeEmail: 'rohan.v@iet.edu',
+      passwordHash: '$argon2id$v=19$m=65536,t=3,p=1$abcdefghijklmnopqrstuvwxyz012345$abcdefghijklmnopqrstuvwxyz012345',
+      department: 'Mechanical Engineering',
+      year: 2,
+      role: 'STUDENT',
+      accountStatus: 'ACTIVE',
+      verifiedAt: new Date()
+    },
+    {
+      id: 'user-sneha-004',
+      name: 'Sneha Kulkarni',
+      collegeEmail: 'sneha.k@iet.edu',
+      passwordHash: '$argon2id$v=19$m=65536,t=3,p=1$abcdefghijklmnopqrstuvwxyz012345$abcdefghijklmnopqrstuvwxyz012345',
+      department: 'Information Technology',
+      year: 4,
+      role: 'STUDENT',
+      accountStatus: 'ACTIVE',
+      verifiedAt: new Date()
+    }
+  ];
+
+  for (const s of demoStudents) {
+    await prisma.user.upsert({
+      where: { id: s.id },
+      update: s,
+      create: s
+    });
+  }
+
+  console.log('Categories, campus points, and students seeded successfully!');
 }
 
 main()

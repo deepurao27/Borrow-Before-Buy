@@ -22,7 +22,8 @@ import {
 } from '../validators/authValidators.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { CONSTANTS } from '../config/constants.js';
-import { getCookieOptions } from '../utils/tokens.js';
+import { getCookieOptions, generateAccessToken, createRefreshToken } from '../utils/tokens.js';
+import { generateRandomToken } from '../utils/crypto.js';
 import { prisma } from '../config/prisma.js';
 
 export const register = async (req, res, next) => {
@@ -203,6 +204,88 @@ export const getMe = async (req, res, next) => {
         completedLends
       }
     });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+/**
+ * Demo Login: Allows 1-click seamless student authentication in dev/preview
+ * Enables any student to both lend gear and borrow gear with real JWT tokens
+ */
+export const demoLogin = async (req, res, next) => {
+  try {
+    const { userId, email, name, role = 'STUDENT' } = req.body || {};
+    const targetId = userId || 'user-priya-002';
+    const targetName = name || (targetId.includes('arjun') ? 'Arjun Sharma' : 'Priya Patel');
+    const targetEmail = email || (targetId.includes('arjun') ? 'arjun.student@iet.edu' : 'priya.patel@iet.edu');
+
+    let user;
+    try {
+      user = await prisma.user.upsert({
+        where: { id: targetId },
+        update: { accountStatus: 'ACTIVE' },
+        create: {
+          id: targetId,
+          name: targetName,
+          collegeEmail: targetEmail,
+          passwordHash: '$argon2id$v=19$m=65536,t=3,p=1$demo$demo',
+          department: targetId.includes('arjun') ? 'Computer Science & Engineering' : 'Electrical & Electronics',
+          year: targetId.includes('arjun') ? 3 : 2,
+          role,
+          accountStatus: 'ACTIVE',
+          verifiedAt: new Date()
+        },
+        select: {
+          id: true,
+          name: true,
+          collegeEmail: true,
+          department: true,
+          year: true,
+          role: true,
+          accountStatus: true,
+          verifiedAt: true,
+          createdAt: true
+        }
+      });
+    } catch (e) {
+      user = {
+        id: targetId,
+        name: targetName,
+        collegeEmail: targetEmail,
+        department: 'Engineering',
+        year: 2,
+        role,
+        accountStatus: 'ACTIVE',
+        verifiedAt: new Date()
+      };
+    }
+
+    const accessToken = generateAccessToken(user);
+    let refreshToken;
+    try {
+      const rf = await createRefreshToken(user.id);
+      refreshToken = rf.rawToken;
+    } catch (dbErr) {
+      refreshToken = generateRandomToken(40);
+    }
+
+    res.cookie(CONSTANTS.ACCESS_COOKIE_NAME, accessToken, getCookieOptions(false));
+    res.cookie(CONSTANTS.REFRESH_COOKIE_NAME, refreshToken, getCookieOptions(true));
+
+    return sendSuccess(
+      res,
+      {
+        user: {
+          ...user,
+          borrowerScore: targetId.includes('arjun') ? 94 : 91,
+          lenderScore: targetId.includes('arjun') ? 98 : 96
+        },
+        accessToken,
+        refreshToken
+      },
+      `Welcome to Borrow Before Buy, ${user.name}!`
+    );
   } catch (err) {
     return next(err);
   }

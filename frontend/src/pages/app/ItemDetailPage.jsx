@@ -246,8 +246,11 @@ export const ItemDetailPage = () => {
             <div className="pt-4 border-t border-paper-sand dark:border-paper-sandDark space-y-3">
               {isOwner ? (
                 <div className="space-y-2">
-                  <div className="p-3 rounded-lg bg-sage/10 text-xs font-bold text-sage text-center">
-                    You listed this item.
+                  <div className="p-3 rounded-lg bg-sage/10 text-xs font-bold text-sage text-center border border-sage/20">
+                    👑 You listed this gear (Lender Mode)
+                    <p className="text-[10px] text-ink-muted font-normal mt-0.5">
+                      Batchmates can see this on noticeboard and send borrow requests.
+                    </p>
                   </div>
                   <Button
                     variant="secondary"
@@ -260,21 +263,51 @@ export const ItemDetailPage = () => {
                   </Button>
                 </div>
               ) : isAuthenticated ? (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => setRequestModalOpen(true)}
-                  className="w-full gap-2 font-bold shadow-sm"
-                >
-                  <Send className="w-4 h-4" />
-                  Request to Borrow
-                </Button>
-              ) : (
-                <Link to="/login" state={{ from: { pathname: `/items/${id}` } }} className="block">
-                  <Button variant="accent" size="lg" className="w-full font-bold shadow-sm">
-                    Log in to Request Item
+                <div className="space-y-2">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={() => setRequestModalOpen(true)}
+                    className="w-full gap-2 font-bold shadow-sm"
+                  >
+                    <Send className="w-4 h-4" />
+                    Request to Borrow (as {user?.name?.split(' ')[0]})
                   </Button>
-                </Link>
+                  <p className="text-[11px] text-center text-ink-muted">
+                    No online charges. ₹{item.securityAmount} offline security deposit is handed directly in-person.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link to="/login" state={{ from: { pathname: `/items/${id}` } }} className="block">
+                    <Button variant="accent" size="lg" className="w-full font-bold shadow-sm">
+                      Log in to Request Item
+                    </Button>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await apiClient('/auth/demo-login', {
+                          method: 'POST',
+                          body: JSON.stringify({ userId: 'user-arjun-001', name: 'Arjun Sharma', email: 'arjun.student@iet.edu' })
+                        });
+                        if (res?.data?.user) {
+                          login(res.data.user, res.data.accessToken);
+                          toast.success('Signed in as Arjun Sharma! Ready to borrow.');
+                          return;
+                        }
+                      } catch {
+                        // Fallback to local login if backend is unreachable
+                      }
+                      login(MOCK_USERS[0], 'mock_token_arjun');
+                      toast.success('Signed in as Arjun Sharma! Ready to borrow.');
+                    }}
+                    className="w-full text-center text-xs text-terracotta hover:underline font-semibold cursor-pointer"
+                  >
+                    ⚡ Instant 1-Click Borrow as Arjun
+                  </button>
+                </div>
               )}
             </div>
           </div>

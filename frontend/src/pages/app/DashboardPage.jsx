@@ -13,7 +13,8 @@ import {
   User,
   Sparkles,
   MapPin,
-  Calendar
+  Calendar,
+  Search
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
@@ -85,17 +86,23 @@ export const DashboardPage = () => {
               <p className="text-xs text-ink-muted dark:text-ink-darkMuted mt-1">
                 {user.department} &bull; Year {user.year} &bull; {user.collegeEmail}
               </p>
-              <div className="flex items-center gap-3 mt-3">
-                <Link to="/profile">
-                  <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8">
-                    <User className="w-3.5 h-3.5" />
-                    View My Public Profile
+              <div className="flex items-center gap-2.5 mt-3 flex-wrap justify-center sm:justify-start">
+                <Link to="/search">
+                  <Button variant="accent" size="sm" className="text-xs gap-1.5 h-8 shadow-sm font-bold">
+                    <Search className="w-3.5 h-3.5" />
+                    Borrow Gear
                   </Button>
                 </Link>
                 <Link to="/post-item">
-                  <Button variant="primary" size="sm" className="text-xs gap-1.5 h-8 shadow-sm">
+                  <Button variant="primary" size="sm" className="text-xs gap-1.5 h-8 shadow-sm font-bold">
                     <PlusCircle className="w-3.5 h-3.5" />
                     Lend an Item
+                  </Button>
+                </Link>
+                <Link to="/profile">
+                  <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8">
+                    <User className="w-3.5 h-3.5" />
+                    My Public Profile
                   </Button>
                 </Link>
               </div>

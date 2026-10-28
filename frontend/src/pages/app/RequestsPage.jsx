@@ -110,7 +110,7 @@ export const RequestsPage = () => {
           }`}
         >
           <Inbox className="w-4 h-4" />
-          Received (For My Gear)
+          Received (Gear I Am Lending)
         </button>
         <button
           onClick={() => setActiveTab('sent')}
@@ -121,7 +121,7 @@ export const RequestsPage = () => {
           }`}
         >
           <Send className="w-4 h-4" />
-          Sent (My Requests)
+          Sent (Gear I Want to Borrow)
         </button>
       </div>
 

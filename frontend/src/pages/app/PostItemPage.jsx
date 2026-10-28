@@ -211,10 +211,26 @@ export const PostItemPage = () => {
   };
 
   // 1-Click Guest Login Helper
-  const handleQuickLoginAsLender = () => {
-    const lender = MOCK_USERS[1]; // Priya Patel
-    login(lender, 'mock_token_' + Date.now());
-    toast.success(`Signed in as ${lender.name} (Lender Profile)!`);
+  const handleQuickLogin = async (selectedUser = MOCK_USERS[1]) => {
+    try {
+      const res = await apiClient('/auth/demo-login', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          name: selectedUser.name,
+          email: selectedUser.collegeEmail
+        })
+      });
+      if (res?.data?.user) {
+        login(res.data.user, res.data.accessToken);
+        toast.success(`Signed in as ${res.data.user.name} (Peer Sharer)!`);
+        return;
+      }
+    } catch {
+      // Fallback to local login if backend is unreachable
+    }
+    login(selectedUser, `mock_token_${selectedUser.id}_${Date.now()}`);
+    toast.success(`Signed in as ${selectedUser.name}!`);
   };
 
   const onSubmit = async (data) => {
@@ -229,12 +245,28 @@ export const PostItemPage = () => {
       return;
     }
 
-    // If user is not logged in, automatically authenticate as demo lender or active student
+    // If user is not logged in, automatically authenticate as verified student
     let activeUser = user;
     if (!activeUser) {
       activeUser = MOCK_USERS[1]; // Priya Patel
-      login(activeUser, 'mock_token_' + Date.now());
-      toast.info(`Auto-linked listing to ${activeUser.name} (Verified Lender).`);
+      try {
+        const res = await apiClient('/auth/demo-login', {
+          method: 'POST',
+          body: JSON.stringify({
+            userId: activeUser.id,
+            name: activeUser.name,
+            email: activeUser.collegeEmail
+          })
+        });
+        if (res?.data?.user) {
+          login(res.data.user, res.data.accessToken);
+        } else {
+          login(activeUser, `mock_token_${activeUser.id}_${Date.now()}`);
+        }
+      } catch (e) {
+        login(activeUser, `mock_token_${activeUser.id}_${Date.now()}`);
+      }
+      toast.info(`Posting listing as verified student: ${activeUser.name}.`);
     }
 
     setSubmitting(true);
@@ -265,16 +297,16 @@ export const PostItemPage = () => {
           await apiClient(`/items/${createdItem.id}/photos`, {
             method: 'POST',
             body: formData
-          });
+          }).catch(() => null);
         } else if (selectedSampleUrl) {
           await apiClient(`/items/${createdItem.id}/photos`, {
             method: 'POST',
             body: JSON.stringify({ photoUrl: selectedSampleUrl })
-          });
+          }).catch(() => null);
         }
       }
 
-      toast.success('🎉 Your item is pinned to the campus noticeboard!');
+      toast.success('🎉 Your item is pinned to the campus noticeboard! Any batchmate can now request to borrow it.');
       navigate(createdItem?.id ? `/items/${createdItem.id}` : '/search');
     } catch (err) {
       const fieldErrorMsg = err.fields ? Object.values(err.fields).filter(Boolean).join('. ') : null;
@@ -293,32 +325,55 @@ export const PostItemPage = () => {
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-terracotta/15 text-terracotta text-xs font-bold mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            Campus Peer Sharing
+            Campus Peer Sharing &bull; Dual Role (Lend & Borrow)
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold font-serif text-ink dark:text-ink-dark">
             Lend an Item to Your Campus
           </h1>
           <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-darkMuted mt-1 max-w-xl">
-            Have a calculator, lab coat, or HDMI cable sitting idle? Lend it to a batchmate, build your campus trust score, and help someone ace their exam.
+            Have a calculator, lab coat, or HDMI cable sitting idle? Lend it to a batchmate, build your campus trust score, and borrow whatever gear you need anytime!
           </p>
         </div>
 
-        {/* Demo Mode / Guest Status Helper */}
-        {!isAuthenticated && (
+        {/* Demo Mode / Active Student Status Helper */}
+        {isAuthenticated ? (
+          <div className="p-3.5 rounded-xl bg-sage/15 border border-sage/40 flex items-center gap-3 text-xs">
+            <Avatar name={user.name} size="sm" />
+            <div>
+              <p className="font-bold text-ink dark:text-ink-dark">
+                Posting as {user.name}
+              </p>
+              <p className="text-[11px] text-ink-muted">
+                Verified Student &bull; Dual Role: Lend your items & borrow gear anytime
+              </p>
+            </div>
+          </div>
+        ) : (
           <div className="p-3.5 rounded-xl bg-marigold/15 border border-marigold/40 flex items-center justify-between gap-3 text-xs">
             <div>
-              <p className="font-bold text-ink dark:text-ink-dark">Guest / Preview Mode</p>
-              <p className="text-[11px] text-ink-muted">You can draft now or 1-click login:</p>
+              <p className="font-bold text-ink dark:text-ink-dark">Campus Peer Mode</p>
+              <p className="text-[11px] text-ink-muted">1-click sign in as verified student:</p>
             </div>
-            <Button
-              type="button"
-              variant="accent"
-              size="sm"
-              onClick={handleQuickLoginAsLender}
-              className="gap-1 font-bold text-xs shrink-0"
-            >
-              Sign in as Priya (Lender)
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="accent"
+                size="sm"
+                onClick={() => handleQuickLogin(MOCK_USERS[1])}
+                className="gap-1 font-bold text-xs shrink-0"
+              >
+                Sign in as Priya
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => handleQuickLogin(MOCK_USERS[0])}
+                className="gap-1 font-bold text-xs shrink-0"
+              >
+                Sign in as Arjun
+              </Button>
+            </div>
           </div>
         )}
       </div>
