@@ -10,11 +10,11 @@ export const HeroNoticeboard = () => {
     <section className="relative pt-10 pb-16 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Campus Live Activity Ticker */}
-        <div className="mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-paper-sand/50 dark:bg-paper-sandDark/30 border border-paper-sand dark:border-paper-sandDark text-xs font-medium text-ink dark:text-ink-dark shadow-xs animate-fadeIn">
-          <span className="w-2 h-2 rounded-full bg-terracotta animate-pulse" />
-          <span className="font-bold text-terracotta">Campus Live:</span>
-          <span className="text-ink-muted dark:text-ink-darkMuted truncate">
-            Rahul lent TI-84 to Ananya at Library Steps (14m ago) • Arjun listed Arduino Kit
+        <div className="mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/60 text-xs font-medium text-slate-200 shadow-sm animate-fadeIn">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          <span className="font-bold text-amber-400">Campus Live:</span>
+          <span className="text-slate-300 truncate">
+            Kabir S. (CSE-AIML) borrowed TI-84 Plus CE from Deepu Rao - 3m ago • 100% Free Peer Lending
           </span>
         </div>
 
@@ -72,10 +72,10 @@ export const HeroNoticeboard = () => {
                 <PaperTag tilt="left" pin={true} className="w-full sm:w-72 self-start shadow-paper hover:z-20 transition-all hover:scale-102 cursor-pointer">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Avatar name="Rahul Sharma" size="sm" />
+                      <Avatar name="Deepu Rao" size="sm" />
                       <div>
-                        <p className="text-xs font-bold text-ink dark:text-ink-dark">Rahul S.</p>
-                        <p className="text-[10px] text-sage font-bold">⭐ 98 Trust Score</p>
+                        <p className="text-xs font-bold text-ink dark:text-ink-dark">Deepu Rao</p>
+                        <p className="text-[10px] text-emerald-400 font-bold">⭐ 98 Trust Score</p>
                       </div>
                     </div>
                     <span className="text-[10px] bg-paper-sand/50 dark:bg-paper-sandDark/50 px-2 py-0.5 rounded-full font-medium">

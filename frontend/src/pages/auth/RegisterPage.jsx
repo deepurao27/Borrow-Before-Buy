@@ -103,7 +103,7 @@ export const RegisterPage = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input
               label="Full Name"
-              placeholder="e.g. Aman Verma"
+              placeholder="e.g. Deepu Rao"
               required
               {...register('name')}
               error={errors.name?.message}
@@ -111,8 +111,8 @@ export const RegisterPage = () => {
 
             <div>
               <Input
-                label="Email Address"
-                placeholder="e.g. yourname@gmail.com or college email"
+                label="College Email Address"
+                placeholder="e.g. deepurao.cse25-29@liet.com or student@liet.edu"
                 type="email"
                 required
                 {...register('collegeEmail')}

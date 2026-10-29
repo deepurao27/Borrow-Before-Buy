@@ -71,12 +71,12 @@ export const ProfilePage = () => {
       {/* 1. Header Card */}
       <Card className="p-6 border-paper-sand dark:border-paper-sandDark shadow-paper">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-          <Avatar name={user.name} size="xl" className="w-24 h-24 text-3xl shrink-0 shadow-paper" />
+          <Avatar name={user?.name || 'Student'} size="xl" className="w-24 h-24 text-3xl shrink-0 shadow-paper" />
 
           <div className="flex-1">
             <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
               <h1 className="text-2xl font-black font-serif text-ink dark:text-ink-dark">
-                {user.name}
+                {user?.name || 'Student'}
               </h1>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sage/15 text-sage border border-sage/30">
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -85,16 +85,16 @@ export const ProfilePage = () => {
             </div>
 
             <p className="text-xs text-ink-muted dark:text-ink-darkMuted mt-1">
-              {user.department} &bull; Year {user.year}
+              {user?.department || 'Engineering'} &bull; Year {user?.year || 3}
             </p>
             <p className="text-xs text-ink-muted font-mono mt-0.5">
-              {user.collegeEmail}
+              {user?.collegeEmail || ''}
             </p>
 
             <div className="flex items-center gap-4 text-xs text-ink-muted mt-3 justify-center sm:justify-start">
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
-                Member since {new Date(user.createdAt).toLocaleDateString()}
+                Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'August 2026'}
               </span>
               <span className="flex items-center gap-1 font-semibold text-ink dark:text-ink-dark">
                 <Package className="w-3.5 h-3.5 text-terracotta" />

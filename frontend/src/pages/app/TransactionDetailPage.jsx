@@ -58,8 +58,8 @@ export const TransactionDetailPage = () => {
     refetchInterval: 4000
   });
 
-  const isLender = transaction?.lenderId === user?.id;
-  const isBorrower = transaction?.borrowerId === user?.id;
+  const isLender = transaction?.lenderId === user?.id || transaction?.lender?.collegeEmail === user?.collegeEmail;
+  const isBorrower = transaction?.borrowerId === user?.id || transaction?.borrower?.collegeEmail === user?.collegeEmail;
   const counterparty = isLender ? transaction?.borrower : transaction?.lender;
 
   // 2. Mutations
@@ -508,7 +508,7 @@ export const TransactionDetailPage = () => {
         {['BORROWED', 'OVERDUE', 'RETURN_PENDING', 'COMPLETED'].includes(transaction.status) && (
           <ReturnConfirmationCard
             transaction={transaction}
-            currentUserId={user.id}
+            currentUserId={user?.id}
             onInitiateReturn={(note) => initiateReturnMutation.mutate(note)}
             onConfirmReturn={() => confirmReturnMutation.mutate()}
             isProcessing={initiateReturnMutation.isPending || confirmReturnMutation.isPending}
@@ -519,7 +519,7 @@ export const TransactionDetailPage = () => {
         {transaction.status === 'COMPLETED' && (
           <RatingCard
             transaction={transaction}
-            currentUserId={user.id}
+            currentUserId={user?.id}
             onSubmitRating={(payload) => submitRatingMutation.mutateAsync(payload)}
             isProcessing={submitRatingMutation.isPending}
           />
@@ -589,6 +589,7 @@ export const TransactionDetailPage = () => {
         onClose={() => setIsQRScannerOpen(false)}
         onConfirmHandover={(payload) => confirmHandoverMutation.mutateAsync(payload)}
         isProcessing={confirmHandoverMutation.isPending}
+        transaction={transaction}
       />
 
       {/* Cancellation Confirmation Modal */}

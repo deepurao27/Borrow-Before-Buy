@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 
 export const ItemDetailPage = () => {
   const { id } = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -50,7 +50,7 @@ export const ItemDetailPage = () => {
   });
 
   const item = itemRes?.data;
-  const isOwner = user && item && user.id === item.ownerId;
+  const isOwner = user && item && (user.id === item.ownerId || user.collegeEmail === item.owner?.collegeEmail);
 
   const handleSendRequest = async (e) => {
     e.preventDefault();

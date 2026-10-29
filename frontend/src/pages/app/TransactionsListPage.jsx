@@ -158,7 +158,7 @@ export const TransactionsListPage = () => {
       ) : (
         <div className="space-y-4">
           {transactions.map((tx) => {
-            const isLender = tx.lenderId === user.id;
+            const isLender = tx.lenderId === user?.id || tx.lender?.collegeEmail === user?.collegeEmail;
             const counterparty = isLender ? tx.borrower : tx.lender;
             const primaryPhoto = tx.item?.photos?.[0]?.url;
 
@@ -174,7 +174,7 @@ export const TransactionsListPage = () => {
                       {primaryPhoto ? (
                         <img
                           src={primaryPhoto}
-                          alt={tx.item.title}
+                          alt={tx.item?.title || 'Campus Item'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                       ) : (
@@ -188,28 +188,28 @@ export const TransactionsListPage = () => {
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         {getStatusBadge(tx.status)}
                         <span className="text-xs text-ink-muted dark:text-ink-darkMuted font-medium">
-                          {isLender ? 'Lending to' : 'Borrowing from'} <strong>{counterparty.name}</strong> ({counterparty.department})
+                          {isLender ? 'Lending to' : 'Borrowing from'} <strong>{counterparty?.name || 'Batchmate'}</strong> ({counterparty?.department || 'LIET'})
                         </span>
                       </div>
 
                       <h3 className="font-serif font-bold text-base text-ink dark:text-ink-dark group-hover:text-terracotta transition-colors">
-                        {tx.item.title}
+                        {tx.item?.title || 'Campus Gear Item'}
                       </h3>
 
                       <div className="flex items-center gap-4 text-xs text-ink-muted dark:text-ink-darkMuted mt-2 flex-wrap">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
-                          Due: {new Date(tx.dueAt).toLocaleDateString()}
+                          Due: {tx.dueAt ? new Date(tx.dueAt).toLocaleDateString() : 'Flexible'}
                         </span>
-                        {(tx.item.customHandoverPoint || tx.item.handoverPoint) && (
+                        {(tx.item?.customHandoverPoint || tx.item?.handoverPoint) && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5 text-terracotta" />
-                            {tx.item.customHandoverPoint || tx.item.handoverPoint?.name}
+                            {tx.item?.customHandoverPoint || tx.item?.handoverPoint?.name}
                           </span>
                         )}
                         <span className="flex items-center gap-1 font-semibold text-ink dark:text-ink-dark">
                           <ShieldCheck className="w-3.5 h-3.5 text-sage" />
-                          Deposit: ₹{tx.securityAgreement?.securityAmount || 0}
+                          Deposit: ₹{tx.securityAgreement?.securityAmount || tx.securityAmount || 0}
                         </span>
                       </div>
                     </div>

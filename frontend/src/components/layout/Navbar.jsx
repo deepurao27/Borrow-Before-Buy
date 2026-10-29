@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { MOCK_USERS } from '../../api/mockData';
+import { apiClient } from '../../api/client';
 
 export const Navbar = () => {
   const { user, login, logout, isAuthenticated } = useAuth();
@@ -68,14 +69,14 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-marigold flex items-center justify-center font-bold text-ink text-lg font-serif shadow-sm transition-transform group-hover:-rotate-3">
-              B
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center font-black text-slate-950 text-sm tracking-tighter shadow-sm transition-transform group-hover:scale-105">
+              BBB
             </div>
             <div className="flex flex-col">
               <span className="font-serif font-black text-lg tracking-tight text-ink dark:text-ink-dark leading-none">
                 BBB
               </span>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-terracotta dark:text-terracotta-light">
+              <span className="text-[9px] uppercase font-bold tracking-widest text-amber-500">
                 Borrow Before Buy
               </span>
             </div>
@@ -195,11 +196,11 @@ export const Navbar = () => {
                     className="flex items-center gap-2 pl-2 border-l border-paper-sand dark:border-paper-sandDark hover:opacity-85 transition-opacity cursor-pointer text-left"
                     title="Click to view trust score or switch student profile"
                   >
-                    <Avatar name={user.name} size="sm" />
+                    <Avatar name={user?.name || 'Student'} size="sm" />
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-ink dark:text-ink-dark leading-tight flex items-center gap-1">
-                        {user.name.split(' ')[0]}
-                        <span className="text-[10px] text-sage font-bold">⭐{user.lenderScore || 95}</span>
+                        {user?.name?.split(' ')[0] || 'Student'}
+                        <span className="text-[10px] text-sage font-bold">⭐{user?.lenderScore || 95}</span>
                       </span>
                       <span className="text-[10px] text-ink-muted hover:text-terracotta font-semibold">
                         Lend & Borrow ▾
@@ -222,31 +223,31 @@ export const Navbar = () => {
                       <div className="px-3 py-2 bg-paper-sand/20 dark:bg-paper-sandDark/20 my-1 mx-2 rounded-lg flex items-center justify-between text-xs">
                         <span className="text-[11px] text-ink-muted font-medium">Your Trust Scores:</span>
                         <div className="flex items-center gap-2 font-bold text-[11px]">
-                          <span className="text-terracotta" title="Lender Trust Score">Lend: {user.lenderScore || 95}</span>
+                          <span className="text-terracotta" title="Lender Trust Score">Lend: {user?.lenderScore || 95}</span>
                           <span>•</span>
-                          <span className="text-sage" title="Borrower Trust Score">Borrow: {user.borrowerScore || 92}</span>
+                          <span className="text-sage" title="Borrower Trust Score">Borrow: {user?.borrowerScore || 92}</span>
                         </div>
                       </div>
 
                       <div className="px-3 py-1 text-[10px] font-bold text-ink-muted uppercase tracking-wider">
                         Switch Student Profile
                       </div>
-                      {MOCK_USERS.slice(0, 4).map((u) => (
+                      {MOCK_USERS.map((u) => (
                         <button
                           key={u.id}
                           onClick={() => handleSwitchUser(u)}
                           className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-paper-sand/20 dark:hover:bg-paper-sandDark/20 cursor-pointer ${
-                            user.collegeEmail === u.collegeEmail ? 'font-bold text-terracotta bg-paper-sand/15' : 'text-ink dark:text-ink-dark'
+                            user?.collegeEmail === u.collegeEmail ? 'font-bold text-amber-500 bg-paper-sand/15' : 'text-ink dark:text-ink-dark'
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             <Avatar name={u.name} size="xs" />
                             <div>
-                              <span className="block leading-tight">{u.name}</span>
-                              <span className="text-[9px] text-ink-muted block">{u.department.split('&')[0]}</span>
+                              <span className="block leading-tight font-semibold">{u.name}</span>
+                              <span className="text-[9px] text-ink-muted block">{u.department.split('&')[0]} • Yr {u.year}</span>
                             </div>
                           </div>
-                          <span className="text-[10px] text-sage font-bold">⭐{u.lenderScore}</span>
+                          <span className="text-[10px] text-emerald-400 font-bold">⭐{u.lenderScore}</span>
                         </button>
                       ))}
 
@@ -398,7 +399,7 @@ export const Navbar = () => {
                 className="w-full gap-2 text-brick"
               >
                 <LogOut className="w-4 h-4" />
-                Log out ({user.name})
+                Log out ({user?.name || 'Account'})
               </Button>
             </div>
           ) : (

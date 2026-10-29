@@ -3,22 +3,23 @@ import { CheckCircle2, Circle, Clock, ArrowRight, AlertTriangle } from 'lucide-r
 import { clsx } from 'clsx';
 
 const STEPS = [
-  { id: 'ACCEPTED', label: 'Request Accepted', desc: 'Mutual agreement initiated' },
-  { id: 'SECURITY_ACKNOWLEDGED', label: 'Security Agreed', desc: 'Offline deposit confirmed' },
-  { id: 'HANDOVER_PENDING', label: 'Condition Verified', desc: 'Checklist & photos approved' },
-  { id: 'BORROWED', label: 'Item Handed Over', desc: 'QR code scanned & active' },
-  { id: 'RETURN_PENDING', label: 'Return & Inspect', desc: 'Item return verified' },
-  { id: 'COMPLETED', label: 'Completed', desc: 'Returned & deposit released' }
+  { id: 'REQUESTED', label: 'Step 1: Requested', desc: 'Borrow request sent' },
+  { id: 'ACCEPTED', label: 'Step 2: Accepted', desc: 'Lender accepted loan' },
+  { id: 'SECURITY_ACKNOWLEDGED', label: 'Step 3: Security Agreed', desc: 'Offline deposit confirmed' },
+  { id: 'HANDOVER_PENDING', label: 'Step 4: Handover Pending', desc: 'Meet at campus spot' },
+  { id: 'BORROWED', label: 'Step 5: Borrowed', desc: 'QR code verified' },
+  { id: 'RETURN_PENDING', label: 'Step 6: Returned', desc: 'Inspected & complete' }
 ];
 
 const STATE_ORDER = {
-  ACCEPTED: 1,
-  SECURITY_ACKNOWLEDGED: 2,
-  HANDOVER_PENDING: 3,
-  BORROWED: 4,
-  OVERDUE: 4,
-  RETURN_PENDING: 5,
-  RETURNED: 5,
+  REQUESTED: 1,
+  ACCEPTED: 2,
+  SECURITY_ACKNOWLEDGED: 3,
+  HANDOVER_PENDING: 4,
+  BORROWED: 5,
+  OVERDUE: 5,
+  RETURN_PENDING: 6,
+  RETURNED: 6,
   COMPLETED: 6,
   CANCELLED: -1,
   DISPUTED: -2

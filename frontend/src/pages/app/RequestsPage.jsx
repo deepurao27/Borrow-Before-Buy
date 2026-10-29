@@ -142,7 +142,7 @@ export const RequestsPage = () => {
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <h3 className="font-serif font-bold text-lg text-ink dark:text-ink-dark">
-                    {req.item?.title}
+                    {req.item?.title || 'Campus Item'}
                   </h3>
                   {statusBadge(req.status)}
                 </div>
@@ -151,11 +151,11 @@ export const RequestsPage = () => {
                   {activeTab === 'received' ? (
                     <div className="flex items-center gap-1.5 font-semibold text-ink dark:text-ink-dark">
                       <Avatar name={req.borrower?.name || 'Borrower'} size="sm" />
-                      <span>{req.borrower?.name} ({req.borrower?.department})</span>
+                      <span>{req.borrower?.name || 'Peer'} ({req.borrower?.department || 'LIET'})</span>
                     </div>
                   ) : (
                     <span className="font-semibold text-ink dark:text-ink-dark">
-                      Handover: {req.item?.customHandoverPoint || req.item?.handoverPoint?.name}
+                      Handover: {req.item?.customHandoverPoint || req.item?.handoverPoint?.name || 'Campus Point'}
                     </span>
                   )}
 
@@ -165,7 +165,7 @@ export const RequestsPage = () => {
                   </div>
 
                   <span className="font-bold text-ink dark:text-ink-dark">
-                    Offline Sec: Rs {req.item?.securityAmount}
+                    Offline Sec: Rs {req.item?.securityAmount || 0}
                   </span>
                 </div>
 
@@ -213,8 +213,8 @@ export const RequestsPage = () => {
                   </Button>
                 )}
 
-                {req.status === 'ACCEPTED' && req.transaction?.id && (
-                  <Link to={`/transactions/${req.transaction.id}`}>
+                {req.status === 'ACCEPTED' && (req.transaction?.id || req.transactionId) && (
+                  <Link to={`/transactions/${req.transaction?.id || req.transactionId}`}>
                     <Button variant="accent" size="sm" className="gap-1 font-bold">
                       View Transaction
                       <ArrowRight className="w-3.5 h-3.5" />

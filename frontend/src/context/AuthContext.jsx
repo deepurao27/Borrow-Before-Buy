@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient } from '../api/client.js';
+import { MOCK_USERS } from '../api/mockData.js';
 
 const AuthContext = createContext();
 
@@ -19,6 +20,14 @@ export const AuthProvider = ({ children }) => {
           const cachedUser = JSON.parse(cachedUserStr);
           if (cachedUser && isMounted) {
             setUser(cachedUser);
+          }
+        } else {
+          // Initialize with Deepu Rao (Author / Student Persona from Report)
+          const defaultUser = MOCK_USERS[0];
+          if (isMounted) {
+            setUser(defaultUser);
+            localStorage.setItem('bbb_user', JSON.stringify(defaultUser));
+            localStorage.setItem('bbb_access_token', 'mock_token_deepu_init');
           }
         }
       } catch (e) {

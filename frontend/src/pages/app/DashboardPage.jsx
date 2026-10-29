@@ -72,11 +72,11 @@ export const DashboardPage = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Student Info */}
           <div className="flex items-center gap-4 text-center sm:text-left">
-            <Avatar name={user.name} size="lg" className="w-16 h-16 text-xl" />
+            <Avatar name={user?.name || 'Student'} size="lg" className="w-16 h-16 text-xl" />
             <div>
               <div className="flex items-center gap-2 justify-center sm:justify-start">
                 <h1 className="text-2xl font-black font-serif text-ink dark:text-ink-dark">
-                  Welcome, {user.name}
+                  Welcome, {user?.name || 'Student'}
                 </h1>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sage/15 text-sage border border-sage/30">
                   <ShieldCheck className="w-3 h-3" />
@@ -84,7 +84,7 @@ export const DashboardPage = () => {
                 </span>
               </div>
               <p className="text-xs text-ink-muted dark:text-ink-darkMuted mt-1">
-                {user.department} &bull; Year {user.year} &bull; {user.collegeEmail}
+                {user?.department || 'CSE-AIML'} &bull; Year {user?.year || 3} &bull; {user?.collegeEmail || ''}
               </p>
               <div className="flex items-center gap-2.5 mt-3 flex-wrap justify-center sm:justify-start">
                 <Link to="/search">
@@ -265,14 +265,14 @@ export const DashboardPage = () => {
                     </span>
                   </div>
                   <h3 className="font-serif font-bold text-base text-ink dark:text-ink-dark">
-                    {tx.item.title}
+                    {tx.item?.title || 'Campus Gear'}
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-ink-muted mt-2">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
-                      Due {new Date(tx.dueAt).toLocaleDateString()}
+                      Due {tx.dueAt ? new Date(tx.dueAt).toLocaleDateString() : 'Flexible'}
                     </span>
-                    <span>Lender: {tx.lender.name}</span>
+                    <span>Lender: {tx.lender?.name || 'Batchmate'}</span>
                   </div>
                 </div>
                 <div className="pt-4 mt-3 border-t border-paper-sand flex justify-end">
@@ -295,18 +295,18 @@ export const DashboardPage = () => {
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <PaperTag color="terracotta">Lending</PaperTag>
                     <span className="text-xs font-semibold text-terracotta">
-                      {tx.status.replace(/_/g, ' ')}
+                      {tx.status?.replace(/_/g, ' ')}
                     </span>
                   </div>
                   <h3 className="font-serif font-bold text-base text-ink dark:text-ink-dark">
-                    {tx.item.title}
+                    {tx.item?.title || 'Campus Gear'}
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-ink-muted mt-2">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
-                      Due {new Date(tx.dueAt).toLocaleDateString()}
+                      Due {tx.dueAt ? new Date(tx.dueAt).toLocaleDateString() : 'Flexible'}
                     </span>
-                    <span>Borrower: {tx.borrower.name}</span>
+                    <span>Borrower: {tx.borrower?.name || 'Batchmate'}</span>
                   </div>
                 </div>
                 <div className="pt-4 mt-3 border-t border-paper-sand flex justify-end">

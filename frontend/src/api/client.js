@@ -1,4 +1,5 @@
 import { mockEngine } from './mockEngine.js';
+import { MOCK_USERS } from './mockData.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -86,6 +87,14 @@ const handleMockFallback = (endpoint, options) => {
   // 3c. Auth: Demo Login
   if (cleanPath === '/auth/demo-login' && method === 'POST') {
     return mockEngine.demoLogin(body.userId);
+  }
+
+  // 3d. Auth: Password recovery
+  if (cleanPath === '/auth/forgot-password' && method === 'POST') {
+    return { success: true, message: 'Password reset instructions dispatched.' };
+  }
+  if (cleanPath === '/auth/reset-password' && method === 'POST') {
+    return { success: true, message: 'Password updated successfully.' };
   }
 
   // 4. Auth: Me
@@ -194,6 +203,97 @@ const handleMockFallback = (endpoint, options) => {
   if (cleanPath.startsWith('/transactions/') && method === 'GET') {
     const txId = cleanPath.replace('/transactions/', '');
     return mockEngine.getTransactionById(txId);
+  }
+
+  // 17a. Security Agreement Update
+  if (cleanPath.match(/^\/transactions\/[^/]+\/security$/) && method === 'PATCH') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.updateSecurityAgreement(txId, body, currentUser);
+  }
+
+  // 17b. Security Agreement Acknowledge
+  if (cleanPath.match(/^\/transactions\/[^/]+\/security\/acknowledge$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.acknowledgeSecurity(txId, currentUser);
+  }
+
+  // 17c. Pre-handover Condition Upload
+  if (cleanPath.match(/^\/transactions\/[^/]+\/condition$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.uploadConditionEvidence(txId, body, currentUser);
+  }
+
+  // 17d. Condition Acknowledge
+  if (cleanPath.match(/^\/transactions\/[^/]+\/condition\/acknowledge$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.acknowledgeCondition(txId, currentUser);
+  }
+
+  // 17e. Handover Token Generation (QR Code)
+  if (cleanPath.match(/^\/transactions\/[^/]+\/handover\/token$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.issueQRToken(txId);
+  }
+
+  // 17f. Handover Confirm (QR Code Scan)
+  if (cleanPath.match(/^\/transactions\/[^/]+\/handover\/confirm$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.confirmHandover(txId, body, currentUser);
+  }
+
+  // 17g. Return Initiate (Borrower marks returned)
+  if (cleanPath.match(/^\/transactions\/[^/]+\/return\/initiate$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.initiateReturn(txId, body, currentUser);
+  }
+
+  // 17h. Return Confirm (Lender inspects & confirms)
+  if (cleanPath.match(/^\/transactions\/[^/]+\/return\/confirm$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.confirmReturn(txId, body, currentUser);
+  }
+
+  // 17i. Rate Counterpart
+  if (cleanPath.match(/^\/transactions\/[^/]+\/rate$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.rateTransaction(txId, body, currentUser);
+  }
+
+  // 17j. Cancel Transaction
+  if (cleanPath.match(/^\/transactions\/[^/]+\/cancel$/) && method === 'POST') {
+    const txId = cleanPath.split('/')[2];
+    return mockEngine.cancelTransaction(txId, body, currentUser);
+  }
+
+  // 18. Disputes & Admin Moderation (Fig. 6.3)
+  if (cleanPath === '/disputes' && method === 'POST') {
+    return mockEngine.raiseDispute(body.transactionId, body, currentUser);
+  }
+
+  if (cleanPath.startsWith('/admin/disputes') && (method === 'PATCH' || method === 'POST')) {
+    const dispId = cleanPath.split('/')[3];
+    return mockEngine.resolveDispute(dispId, body.decision, body.trustAdjustment);
+  }
+
+  if (cleanPath === '/admin/audit-logs' && method === 'GET') {
+    return mockEngine.getAuditLogs();
+  }
+
+  if (cleanPath === '/admin/stats' && method === 'GET') {
+    return {
+      data: {
+        stats: {
+          openDisputes: 1,
+          completedTransactions: 89,
+          activeItems: 6,
+          totalUsers: 6
+        }
+      }
+    };
+  }
+
+  if (cleanPath === '/admin/users' && method === 'GET') {
+    return { data: MOCK_USERS };
   }
 
   if (cleanPath.startsWith('/transactions/') && (method === 'POST' || method === 'PATCH')) {

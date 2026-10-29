@@ -32,6 +32,18 @@ const loginSchema = z.object({
 
 const DEMO_PERSONAS = [
   {
+    id: 'user-deepu-000',
+    name: 'Deepu Rao',
+    collegeEmail: 'deepurao.cse25-29@liet.com',
+    department: 'CSE-AIML (LIET)',
+    year: 2,
+    role: 'STUDENT',
+    borrowerScore: 98,
+    lenderScore: 99,
+    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+    subtitle: 'Project Author & Campus Sharing Legend'
+  },
+  {
     id: 'user-arjun-001',
     name: 'Arjun Sharma',
     collegeEmail: 'arjun.student@iet.edu',
@@ -41,7 +53,7 @@ const DEMO_PERSONAS = [
     borrowerScore: 94,
     lenderScore: 98,
     avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop&q=80',
-    subtitle: 'Borrower & Lender Profile'
+    subtitle: 'Senior Student (Lender of TI-84)'
   },
   {
     id: 'user-priya-002',
@@ -50,22 +62,22 @@ const DEMO_PERSONAS = [
     department: 'Electrical Engineering',
     year: 2,
     role: 'STUDENT',
-    borrowerScore: 91,
-    lenderScore: 96,
+    borrowerScore: 96,
+    lenderScore: 98,
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
-    subtitle: 'Active Lender (Cables & Gear)'
+    subtitle: 'Active Peer Sharer (Rank 2 Silver)'
   },
   {
     id: 'user-admin-099',
     name: 'Campus Moderator',
-    collegeEmail: 'admin@iet.edu',
-    department: 'Campus Administration',
+    collegeEmail: 'admin@liet.edu',
+    department: 'Student Affairs & Moderation',
     year: 4,
     role: 'ADMIN',
     borrowerScore: 100,
     lenderScore: 100,
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&auto=format&fit=crop&q=80',
-    subtitle: 'Admin & Safety Oversight'
+    subtitle: 'Admin Dispute & Condition Evidence Review'
   }
 ];
 

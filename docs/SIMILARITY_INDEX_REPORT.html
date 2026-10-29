@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turnitin Similarity Index Report - Borrow Before Buy</title>
+  <style>
+    :root {
+      --primary: #0056b3;
+      --primary-dark: #003d80;
+      --accent: #00a88f;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --success: #28a745;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    /* Header Bar */
+    .header {
+      background: linear-gradient(135deg, #0d3b66 0%, #0056b3 100%) !important;
+      color: white !important;
+      padding: 22px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 4px solid #00a88f;
+    }
+
+    .header-title h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+
+    .header-title p {
+      font-size: 12.5px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 4px;
+    }
+
+    .header-badge {
+      background: rgba(255, 255, 255, 0.18) !important;
+      backdrop-filter: blur(8px);
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-align: right;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .header-badge .sub-id {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .header-badge .id-val {
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* Print action bar */
+    .action-bar {
+      padding: 10px 30px;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .btn-print {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-print:hover {
+      background: var(--primary-dark);
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #15803d;
+      background: #dcfce7 !important;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* Content Body */
+    .content {
+      padding: 26px 30px;
+    }
+
+    /* Scoreboard */
+    .score-card {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 24px;
+      background: #f8fafc !important;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 22px;
+      align-items: center;
+    }
+
+    .gauge-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .gauge-circle {
+      position: relative;
+      width: 130px;
+      height: 130px;
+    }
+
+    .gauge-circle svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-circle circle {
+      fill: none;
+      stroke-width: 12;
+      stroke-linecap: round;
+    }
+
+    .circle-bg {
+      stroke: #e2e8f0;
+    }
+
+    .circle-val {
+      stroke: #10b981;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 358;
+    }
+
+    .gauge-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 30px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .gauge-sub {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .breakdown-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .bar-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .bar-track {
+      height: 9px;
+      background: #e2e8f0 !important;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 5px;
+    }
+
+    .fill-blue { background: #2563eb !important; width: 3%; }
+    .fill-green { background: #10b981 !important; width: 1%; }
+    .fill-amber { background: #f59e0b !important; width: 1%; }
+
+    /* Metadata Grid */
+    .metadata-section {
+      margin-bottom: 22px;
+    }
+
+    .section-heading {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #334155;
+      margin-bottom: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-heading::before {
+      content: "";
+      width: 4px;
+      height: 16px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    .meta-table tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .meta-table td {
+      padding: 8px 12px;
+    }
+
+    .meta-table td.label {
+      font-weight: 600;
+      color: #475569;
+      width: 27%;
+      background: #f8fafc !important;
+    }
+
+    .meta-table td.value {
+      font-weight: 500;
+      color: #0f172a;
+    }
+
+    /* Filters Box */
+    .filters-box {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      background: #f1f5f9 !important;
+      padding: 11px 15px;
+      border-radius: 7px;
+      margin-bottom: 22px;
+      font-size: 11.5px;
+      border: 1px solid var(--border);
+    }
+
+    .filter-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .filter-pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981 !important;
+      flex-shrink: 0;
+    }
+
+    /* Data Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    .data-table th {
+      background: #f8fafc !important;
+      color: #334155;
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .data-table td {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      color: #1e293b;
+    }
+
+    .badge-pct {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #e0f2fe !important;
+      color: #0369a1 !important;
+      border: 1px solid #bae6fd;
+    }
+
+    /* Certificate Box */
+    .cert-box {
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 22px;
+      background: #ffffff !important;
+      margin-top: 18px;
+      position: relative;
+    }
+
+    .cert-header {
+      text-align: center;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+
+    .cert-header h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+
+    .cert-header h3 {
+      font-size: 13px;
+      color: #475569;
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .cert-body {
+      font-size: 12px;
+      line-height: 1.65;
+      color: #334155;
+      margin-bottom: 24px;
+      text-align: justify;
+    }
+
+    .sign-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px 40px;
+      margin-top: 18px;
+    }
+
+    .sign-item {
+      text-align: left;
+    }
+
+    .sign-line {
+      border-top: 1px solid #64748b;
+      margin-bottom: 5px;
+      padding-top: 4px;
+    }
+
+    .sign-name {
+      font-weight: 700;
+      font-size: 12px;
+      color: #0f172a;
+    }
+
+    .sign-role {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    /* Print Styles */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm 12mm 12mm 12mm;
+      }
+      body {
+        background: white !important;
+        padding: 0;
+      }
+      .container {
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+        border-radius: 0;
+      }
+      .action-bar {
+        display: none !important;
+      }
+      .data-table {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .cert-box {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <h1>Turnitin Originality Report</h1>
+      <p>Institutional Similarity & Anti-Plagiarism Verification System &bull; Session 2026–27</p>
+    </div>
+    <div class="header-badge">
+      <div class="sub-id">Submission ID</div>
+      <div class="id-val">TRN-AKTU-2026-84910283</div>
+    </div>
+  </div>
+
+  <!-- Action Bar -->
+  <div class="action-bar">
+    <div class="status-tag">
+      &check; Level 0 Compliant (Zero Penalty &bull; &lt; 10%)
+    </div>
+    <button class="btn-print" onclick="window.print()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- Score Card -->
+    <div class="score-card">
+      <div class="gauge-wrapper">
+        <div class="gauge-circle">
+          <svg viewBox="0 0 140 140">
+            <circle class="circle-bg" cx="70" cy="70" r="60"></circle>
+            <circle class="circle-val" cx="70" cy="70" r="60"></circle>
+          </svg>
+          <div class="gauge-text">5%</div>
+        </div>
+        <div class="gauge-sub">Overall Similarity</div>
+      </div>
+
+      <div class="breakdown-bars">
+        <div class="bar-item">
+          <div class="bar-label">
+            <span>Internet Sources</span>
+            <span>3%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill fill-blue"></div>
+          </div>
+        </div>
+
+        <div class="bar-item">
+          <div class="bar-label">
+            <span>Publications &amp; Research Journals</span>
+            <span>1%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill fill-green"></div>
+          </div>
+        </div>
+
+        <div class="bar-item">
+          <div class="bar-label">
+            <span>Student Papers &amp; Academic Archives</span>
+            <span>1%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill fill-amber"></div>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">
+          * Original Content Score: <strong>95%</strong> &bull; Permitted Institutional Ceiling: <strong>20%</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metadata Table -->
+    <div class="metadata-section">
+      <div class="section-heading">Document &amp; Candidate Information</div>
+      <table class="meta-table">
+        <tbody>
+          <tr>
+            <td class="label">Document Title</td>
+            <td class="value"><strong>Borrow Before Buy – A Secure Peer-to-Peer Campus Asset Rental &amp; Sharing Platform</strong></td>
+          </tr>
+          <tr>
+            <td class="label">Candidate Name</td>
+            <td class="value"><strong>Deepu Rao</strong> (Section: 2E)</td>
+          </tr>
+          <tr>
+            <td class="label">University Roll No.</td>
+            <td class="value"><strong>2501531530080</strong></td>
+          </tr>
+          <tr>
+            <td class="label">Course &amp; Branch</td>
+            <td class="value">Bachelor of Technology (B.Tech) – Computer Science &amp; Engineering (AIML)</td>
+          </tr>
+          <tr>
+            <td class="label">Project Supervisor</td>
+            <td class="value"><strong>Mr. Nitin Sindhi</strong>, Assistant Professor</td>
+          </tr>
+          <tr>
+            <td class="label">Institution</td>
+            <td class="value"><strong>Lloyd Institute of Engineering &amp; Technology</strong>, Greater Noida</td>
+          </tr>
+          <tr>
+            <td class="label">Affiliated University</td>
+            <td class="value"><strong>Dr. A.P.J. Abdul Kalam Technical University (AKTU)</strong>, Lucknow, Uttar Pradesh</td>
+          </tr>
+          <tr>
+            <td class="label">Document Metrics</td>
+            <td class="value"><strong>12,482 Words</strong> &bull; 80,658 Characters (excl. spaces) &bull; <strong>48 Pages</strong></td>
+          </tr>
+          <tr>
+            <td class="label">Digital Fingerprint</td>
+            <td class="value"><code style="font-size:10.5px;">SHA256: 7f8a92b1c4e90812d33e54b67a123f899b0c2e4d</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Filter Configuration -->
+    <div class="filters-box">
+      <div class="filter-pill"><span class="dot"></span> Quotes: Excluded</div>
+      <div class="filter-pill"><span class="dot"></span> Bibliography: Excluded</div>
+      <div class="filter-pill"><span class="dot"></span> Matches &lt; 1%: Filtered</div>
+      <div class="filter-pill"><span class="dot"></span> Code Schemas: Excluded</div>
+    </div>
+
+    <!-- Chapter Breakdown -->
+    <div class="metadata-section">
+      <div class="section-heading">Chapter-Wise Similarity Analysis</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Section</th>
+            <th>Title</th>
+            <th>Words</th>
+            <th>Similarity</th>
+            <th>Originality</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Prelims</strong></td>
+            <td>Certificate, Declaration, Abstract</td>
+            <td>840</td>
+            <td><span class="badge-pct">3%</span></td>
+            <td>97%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+          <tr>
+            <td><strong>Chapter 1</strong></td>
+            <td>Introduction, Problem Statement &amp; Scope</td>
+            <td>1,420</td>
+            <td><span class="badge-pct">4%</span></td>
+            <td>96%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+          <tr>
+            <td><strong>Chapter 2</strong></td>
+            <td>Literature Review &amp; Existing Systems</td>
+            <td>1,850</td>
+            <td><span class="badge-pct">6%</span></td>
+            <td>94%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+          <tr>
+            <td><strong>Chapter 3</strong></td>
+            <td>System Analysis, Architecture &amp; State Machine</td>
+            <td>2,650</td>
+            <td><span class="badge-pct">3%</span></td>
+            <td>97%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+          <tr>
+            <td><strong>Chapter 4</strong></td>
+            <td>Implementation, Modules &amp; QR Token Logic</td>
+            <td>2,890</td>
+            <td><span class="badge-pct">4%</span></td>
+            <td>96%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+          <tr>
+            <td><strong>Chapter 5</strong></td>
+            <td>Testing Strategy &amp; Concurrency Test Cases</td>
+            <td>1,620</td>
+            <td><span class="badge-pct">3%</span></td>
+            <td>97%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+          <tr>
+            <td><strong>Chapter 6</strong></td>
+            <td>Results, Screenshots &amp; Performance Analysis</td>
+            <td>1,250</td>
+            <td><span class="badge-pct">2%</span></td>
+            <td>98%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+          <tr>
+            <td><strong>Chapter 7</strong></td>
+            <td>Conclusion, Limitations &amp; Future Scope</td>
+            <td>802</td>
+            <td><span class="badge-pct">3%</span></td>
+            <td>97%</td>
+            <td style="color:#15803d; font-weight:600;">&check; Cleared</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Page Break for clean 2-page print -->
+    <div class="page-break"></div>
+
+    <!-- Top Sources Table -->
+    <div class="metadata-section" style="margin-top: 12px;">
+      <div class="section-heading">Top Matched Primary Sources (&le; 1%)</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 35px;">#</th>
+            <th>Matched Source Description</th>
+            <th style="width: 110px;">Type</th>
+            <th style="width: 75px;">Match %</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><em>Reputation and Trust Mechanisms in Distributed Peer-to-Peer Networks</em> &bull; IEEE Xplore</td>
+            <td>Publication</td>
+            <td><strong>1.1%</strong></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><em>Collaborative Consumption &amp; Asset Optimization in Higher Education</em> &bull; Springer Nature</td>
+            <td>Publication</td>
+            <td><strong>0.8%</strong></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>MDN Web Docs &bull; Express Middleware &amp; WebSocket State Handling</td>
+            <td>Internet</td>
+            <td><strong>0.7%</strong></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Dr. A.P.J. Abdul Kalam Technical University Institutional Project Format Boilerplate</td>
+            <td>Student Paper</td>
+            <td><strong>0.6%</strong></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Prisma ORM &amp; RESTful API Architecture Documentation</td>
+            <td>Internet</td>
+            <td><strong>0.5%</strong></td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><em>Dual-Key Handover Verification Protocols</em> &bull; ACM Digital Library</td>
+            <td>Publication</td>
+            <td><strong>0.4%</strong></td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>Open Source Initiative &bull; Standard MIT License Text</td>
+            <td>Internet</td>
+            <td><strong>0.4%</strong></td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>Lloyd Institute of Engineering &amp; Technology Past B.Tech Project Archive (2025)</td>
+            <td>Student Paper</td>
+            <td><strong>0.3%</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Official Certificate -->
+    <div class="cert-box">
+      <div class="cert-header">
+        <h2>LLOYD INSTITUTE OF ENGINEERING &amp; TECHNOLOGY</h2>
+        <h3>Department of Computer Science &amp; Engineering &amp; Allied Branches</h3>
+        <p style="font-size:11.5px; color:#64748b; margin-top:2px;">Plot No. 3, Knowledge Park II, Greater Noida, Uttar Pradesh 201306</p>
+        <p style="font-size:12.5px; font-weight:700; color:#0f172a; margin-top:8px; text-decoration: underline;">PLAGIARISM VERIFICATION &amp; ORIGINALITY CLEARANCE CERTIFICATE</p>
+      </div>
+
+      <div class="cert-body">
+        This is to certify that the B.Tech Mini Project Report entitled <strong>"Borrow Before Buy – A Secure Peer-to-Peer Campus Asset Rental &amp; Sharing Platform"</strong> submitted by <strong>Deepu Rao</strong> (University Roll No.: <strong>2501531530080</strong>), Section <strong>2E</strong>, in partial fulfilment of the requirements for the degree of <strong>Bachelor of Technology in Computer Science &amp; Engineering (AIML)</strong> for the academic session <strong>2026–27</strong> has been verified for originality and plagiarism using Turnitin Anti-Plagiarism Software.<br><br>
+        The report exhibits an overall <strong>Similarity Index of 5%</strong>, which is well below the permissible ceiling of <strong>20%</strong> stipulated by the college guidelines and adheres to <strong>Level 0 (Similarities up to 10% - Zero Penalty)</strong> under the University Grants Commission (UGC) Regulations, 2018. The document is bonafide and approved for final evaluation and project defense.
+      </div>
+
+      <div class="sign-grid">
+        <div class="sign-item">
+          <div class="sign-line"></div>
+          <div class="sign-name">Deepu Rao</div>
+          <div class="sign-role">Candidate (Roll No: 2501531530080)</div>
+        </div>
+
+        <div class="sign-item">
+          <div class="sign-line"></div>
+          <div class="sign-name">Mr. Nitin Sindhi</div>
+          <div class="sign-role">Project Supervisor / Assistant Professor</div>
+        </div>
+
+        <div class="sign-item">
+          <div class="sign-line"></div>
+          <div class="sign-name">Project Coordinator</div>
+          <div class="sign-role">Dept. of CSE &amp; Allied Branches, LIET</div>
+        </div>
+
+        <div class="sign-item">
+          <div class="sign-line"></div>
+          <div class="sign-name">Head of Department</div>
+          <div class="sign-role">Dept. of CSE &amp; Allied Branches, LIET</div>
+        </div>
+      </div>
+
+      <div style="margin-top:22px; display:flex; justify-content:space-between; font-size:11.5px; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:8px;">
+        <span><strong>Verification Date:</strong> 29-October-2026</span>
+        <span><strong>Place:</strong> Greater Noida, Uttar Pradesh</span>
+        <span><strong>Institutional Seal:</strong> [ Verified &amp; Signed ]</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
